@@ -1,0 +1,129 @@
+﻿
+@model microSQL.Tabla
+@{
+    ViewBag.Title = "microSQL";
+}
+
+<body>
+    <div>
+        <h2>microSQL</h2>
+    </div>
+
+    <div style="column-count:2;">
+
+        <div style="width:500px;height:250px;overflow:auto;background-color:lightgray;">
+
+            <h2>Object Explorer</h2>
+            <br />
+
+            <ul style="list-style-type:none;">
+                @foreach (var item in microSQL.Controllers.HomeController.tablas)
+                {
+                    <li>
+                        <a href="www.google.com"><b>@item.nombreTabla</b></a>
+                        <ul style="list-style-type:none;">
+                            @foreach (var columna in item.columnas)
+                            {
+                                <li>@columna</li>
+                            }
+                        </ul>
+                    </li>
+
+                }
+
+                <li>
+                    <a href="www.google.com"><b>Tabla 1</b></a>
+                    <ul style="list-style-type:none;">
+                        <li>ID</li>
+                        <li>Cantidad</li>
+                        <li>Precio</li>
+                        <li>Descripcion</li>
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
+
+        <br />
+
+        <div>
+            @using (Html.BeginForm())
+            {
+                @Html.TextArea("texto", null, new { style = "width:500px; height:250px;" })
+                @*<textarea name="textarea" style="width:500px;height:250px;"></textarea>*@
+                <input type="submit" value="Go" />
+            }
+        </div>
+
+    </div>
+
+    <br />
+
+    <div class="jumbotron">
+
+        <h2>Tabla 1</h2>
+
+        <br />
+
+        <table class="table">
+
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Cantidad
+                </th>
+                <th>
+                    Precio
+                </th>
+                <th>
+                    Descripcion
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    1
+                </th>
+                <th>
+                    5
+                </th>
+                <th>
+                    13.5
+                </th>
+                <th>
+                    Objeto 1
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    2
+                </th>
+                <th>
+                    7
+                </th>
+                <th>
+                    28.3
+                </th>
+                <th>
+                    Objeto 2
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    3
+                </th>
+                <th>
+                    10
+                </th>
+                <th>
+                    5.00
+                </th>
+                <th>
+                    Objeto 3
+                </th>
+            </tr>
+        </table>
+    </div>
+
+</body>

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "microSQL", "microSQL\microSQL.csproj", "{7C1F25D1-07A1-4AF0-AA02-E48629A2A73C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C1F25D1-07A1-4AF0-AA02-E48629A2A73C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C1F25D1-07A1-4AF0-AA02-E48629A2A73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C1F25D1-07A1-4AF0-AA02-E48629A2A73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C1F25D1-07A1-4AF0-AA02-E48629A2A73C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6564E0C-78AE-4E92-884C-FFE51320B47D}
+	EndGlobalSection
+EndGlobal
