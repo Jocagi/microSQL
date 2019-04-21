@@ -15,7 +15,8 @@ namespace microSQL.Controllers
         {
             //To Do.. Mostrar de color distinto cada palabra reservada en la interfaz grafica.....
 
-            palabrasReservadas = Configuracion.leerArchivoConfiguracion();
+            palabrasReservadas = Configuracion.leerArchivoConfiguracion(); //configurar diccionario
+            Tabla.leerAchivoTablas(); //leer tablas
             return View();
         }
         [HttpPost]

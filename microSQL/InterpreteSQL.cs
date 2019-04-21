@@ -138,6 +138,10 @@ namespace microSQL
                     palabra += texto.Substring(count, 1);
                     count++;
                 }
+                else if (i == texto.Length - 1) //Ultimo valor del array
+                {
+                    Resultado.Add(palabra); //Agregar al vector
+                }
                 else
                 {
                     Resultado.Add(palabra); //Agregar al vector
@@ -146,10 +150,9 @@ namespace microSQL
                 }
             }
 
-            string[] algo = texto.Split(separador);
-            Resultado[5] = algo[algo.Length - 1];
+            //string[] algo = texto.Split(separador);
+            //Resultado[5] = algo[algo.Length - 1];
             return Resultado.ToArray();
-
         }
 
         private static string[] separarComandos(string texto)
@@ -569,10 +572,6 @@ namespace microSQL
              */
 
             Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
-
-            //Pasos a seguir...
-            bool buscarNombreTabla = false;
-            
             bool error = false;
 
             //Variables
@@ -599,7 +598,7 @@ namespace microSQL
 
                 //Recorrer cada uno de los fragmentos en array
 
-                if (sentences.Length != 5) //Verificar formato correcro de instrucciones
+                if (sentences.Length == 5) //Verificar formato correcro de instrucciones
                 {
                     if (sentences[0] != "α" || sentences[3] != "~") //Buscar errores
                     {
@@ -623,10 +622,53 @@ namespace microSQL
                         //Verificar que exista la misma cantidad de columnas que de valores
                         if (arrayColumnas.Length == arrayValores.Length)
                         {
-                            for (int i = 0; i < arrayColumnas.length; i++)
-                            {
+                            //Verificar que exista la tabla
 
+                            int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                            if (posicionTabla > -1)
+                            {
+                                //obtener las columnas de la tabla
+                                List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
+
+                                //Comparar columnas en tabla con las columnas ingresadas 
+
+                                //Arreglo con los valores ya en la posicion correcta
+                                string[] nuevoArrayValores = new string[arrayColumnas.Length];
+
+                                for (int i = 0; i < arrayColumnas.Length; i++)
+                                {
+                                    //Verificar que la tabla contenga las columnas
+                                    if (columnasEnTabla.Contains(arrayColumnas[i]))
+                                    {
+                                        //posicion de la columna en la que se desea ingresar el valor
+                                        int pos = columnasEnTabla.FindIndex(x => x == arrayColumnas[i]);
+
+                                        //ingresar valor en la posicion correcta de tabla
+                                        nuevoArrayValores[pos] = arrayValores[i];
+                                    }
+                                    else
+                                    {
+                                        //To Do...
+                                        //Mensaje de error
+                                        //La tabla no contiene una de las columnas descritas 
+                                        error = true;
+                                        break;
+                                    }
+                                }
+                                //Verificar si no hubo un error en el proceso
+                                if (error != true)
+                                {
+                                    //Ingresar array en arbol 
+                                    Controllers.HomeController.tablas[posicionTabla].insertarDatos(nuevoArrayValores);
+                                }
                             }
+                            else
+                            {
+                                //To Do...
+                                //Error No existe la tabla
+                            }
+                            
                         }
                         else
                         {
