@@ -19,8 +19,92 @@ namespace microSQL
         public List<List<string>> filas { get; set; } //To Do... Cambiar lista por arbol B
 
 
+        //Constructor
+        public Tabla() { }
+        private Tabla(string nombre, List<string> tiposDeDatos, List<string> nombresColumnas, string llaveColumna)
+        {
+            this.nombreTabla = nombre;
+            this.tiposDeDatos = tiposDeDatos;
+            this.columnas = nombresColumnas;
+            this.columnaLlave = llaveColumna;
+        }
+        //To Do... Hacer sobrecarga a constructor que incluya al arbol B
+
         //Archivos de tablas
-        public void leerAchivoTablas() { } //To Do...
+        public static void leerAchivoTablas()
+        {
+            //Eliminar tablas en controlador
+            Controllers.HomeController.tablas.Clear();
+
+            //Resumen: Se leen todos los archivos de tablas y crea la lista en el controlador
+
+            string carpetaTabla = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas");
+            string carpetaArbolB = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/arbolesb");
+            
+            //Se enlistan todos los archivos en la carpeta de tablas, se leen y definen las propiedades de un objeto tabla
+            DirectoryInfo info = new DirectoryInfo(carpetaTabla);
+            FileInfo[] listaArchivosEnCarpeta = info.GetFiles();
+            
+            foreach (var archivo in listaArchivosEnCarpeta)
+            {
+                //Variables
+                string nombreTabla;
+                List<string> datos = new List<string>();
+                List<string> columnas = new List<string>();
+                string llave = "";
+                
+                nombreTabla = archivo.Name.Replace(".tabla", "");
+
+                leerArchivoConfiguracionTabla(carpetaTabla + "/" + nombreTabla + ".tabla", ref datos, ref columnas, ref llave);
+                leerArchivoArbolB(carpetaArbolB + "/" + nombreTabla + ".arbolb");
+
+                //Agregar tabla a lista
+                Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, llave));
+            }
+        }
+
+        private static void leerArchivoConfiguracionTabla(string path, ref List<string> tiposDeDato, ref List<string> columnas, ref string llave)
+        {
+            if (!String.IsNullOrEmpty(path))
+            {
+                if (File.Exists(path))
+                {
+                    using (var reader = new StreamReader(path))
+                    {
+                        int i = 0; //la linea del archivo que se esta visitando
+
+                        while (!reader.EndOfStream) //Recorrer archivo hasta el final
+                        {
+                            var line = reader.ReadLine(); //linea actual
+
+                            //Formato Archivo:
+                            // linea[0]  tipos de dato (separados por coma)
+                            // linea[1]  nombres de columna (separados por coma)
+                            // linea[2]  nombre de columna llave
+
+                            string[] palabras = line.Split(','); //dividir datos seprados por coma
+                            switch (i)
+                            {
+                                case 0:
+                                    tiposDeDato = palabras.ToList();
+                                    break;
+                                case 1:
+                                    columnas = palabras.ToList();
+                                    break;
+                                case 2:
+                                    llave = line;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            i++; //Sumar 1 a la linea
+                        }
+                    }
+                }
+            }
+        }
+        private static void leerArchivoArbolB(string path) { } //To Do...
 
         private void crearArchivo(string path)
         {
@@ -149,13 +233,32 @@ namespace microSQL
             escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
         } 
 
-        public void insertarDatos(string tabla, string columna, string valor) { } //To Do...
-        public void seleccionarDatos(string tabla, string columna) { } //To Do...
-        public void seleccionarDatos(string tabla, string columna, string valor) { /* //Operador =  //Operador 'Like' */} //To Do...
-        public void eliminarFilas(string tabla, string valor) { } //To Do...
-        public void eliminarTabla(string tabla) { } //To Do...
+        public void insertarDatos(string[] valores) {
+            //Se recibe un arreglo con valores ya en la posicion correcta, listo para insertar en arbol b
+        } //To Do...
+
+        public void seleccionarDatos(string[] columnas) { } //To Do...
+
+        public void seleccionarDatos(string[] columna, string valor) { /* //Operador =  //Operador 'Like' */} //To Do...
+
+        public void eliminarFilas(string valor) { } //To Do...
+
+        public void eliminarTabla() {
+            //Elimina los archivos que hacen referencia a esta tabla
+
+            string path1 = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas") + "/" + nombreTabla + ".tabla";
+            string path2 = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/arbolesb") + "/" + nombreTabla + ".arbolb";
+
+            if (System.IO.File.Exists(path1) && System.IO.File.Exists(path2))
+            {
+                //Eliminar archivos
+                System.IO.File.Delete(path1);
+                System.IO.File.Delete(path2);
+            }
+        }
+
         //Extra... 
-        public void actualizarDatos(string tabla, string columna, string valorAntiguo, string nuevoValor) { } //To Do...
+        public void actualizarDatos(string columna, string valorAntiguo, string nuevoValor) { } //To Do...
 
         //Extra
         public void exportarJSON() { } //To Do...

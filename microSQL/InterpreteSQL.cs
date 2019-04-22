@@ -9,7 +9,7 @@ namespace microSQL
     {
 
         //Intrucciones SQL...
-        public static void leerInstrucciones(string texto) //To Do...
+        public static void leerInstrucciones(string texto) 
         {
             //Leer palabras reservadas
             Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
@@ -144,12 +144,15 @@ namespace microSQL
                     palabra = ""; //Reiniciar palabra
                     count++;
                 }
+                if (i == texto.Length - 1) //Ultimo valor del array
+                {
+                    Resultado.Add(palabra); //Agregar al vector
+                }
             }
 
-            string[] algo = texto.Split(separador);
-            Resultado[5] = algo[algo.Length - 1];
+            //string[] algo = texto.Split(separador);
+            //Resultado[5] = algo[algo.Length - 1];
             return Resultado.ToArray();
-
         }
 
         private static string[] separarComandos(string texto)
@@ -253,6 +256,53 @@ namespace microSQL
             texto = texto.Replace(')', '#');
 
             return texto;
+        }
+
+        private static string[] eliminarPosicionesVacias(string[] array)
+        {
+            //Devuelve un array que no inclue posiciones con "" como valor
+
+            List<string> nuevoArray = new List<string>();
+
+            foreach (var item in array)
+            {
+                if (item != "")
+                {
+                    nuevoArray.Add(item);
+                }
+            }
+
+            return nuevoArray.ToArray();
+        }
+
+        private static string eliminarEspacios(string texto)
+        {
+            //Se recibe un string con espacios extras al inicio o al final y se eliminan
+
+            string[] nuevoTexto = texto.Split(' ');
+            nuevoTexto = eliminarPosicionesVacias(nuevoTexto);
+
+            string resultado =  "";
+
+            foreach (var item in nuevoTexto)
+            {
+                resultado += item;
+            }
+
+            return resultado;
+        }
+
+        private static string[] corregirArreglo(string[] array)
+        {
+            //Se recibe un arreglo previamente convalores separados por coma y se formatea manerade eliminar espacios innecesarios
+            //Corregir saltos de linea
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = eliminarEspacios(array[i]);
+            }
+            array = eliminarPosicionesVacias(array);
+
+            return array;
         }
 
         private static Dictionary<string, string> diccionarioCaracteres()
@@ -500,10 +550,220 @@ namespace microSQL
             
         }
 
-        public static void insertarDatos(string texto) { } //To Do...
+        public static void eliminarTabla(string texto)
+        {
+            /*
+            Ejemplo instrucciones:
+            DROP TABLE
+            <nombre de la tabla>   
+             */
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            
+            //Variables
+            string nombreTabla = "";
+            
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["DROP TABLE"]))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones
+                string[] sentences = texto.Split(' ');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 2 posiciones....
+                // [0]'DROP TABLE' [1]nombre
+
+                //Recorrer cada uno de los fragmentos en array
+
+                if (sentences.Length == 2) //Verificar formato correcro de instrucciones
+                {
+                    if (sentences[0] == "α")
+                    {
+                        //Definir nombre de tabla
+                        nombreTabla = sentences[1];
+
+                        //Verificar que tabla exista y buscarla
+                        int index = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+                        if (index > -1)
+                        {
+                            //Eliminar tabla
+                            //-----------------------------------------------------------------------
+                            Controllers.HomeController.tablas[index].eliminarTabla();
+                        }
+                    }
+                    else
+                    {
+                        //Error
+                    }
+                }
+                else
+                {
+                    //To Do... 
+                    //Error... instrucciones incorrrectas
+                }
+            }
+            else
+            {
+                //To Do..
+                //Error
+            }
+        } 
+       
+        public static void insertarDatos(string texto) {
+
+            /*
+            Ejemplo instrucciones:
+            INSERT INTO
+            <nombre de la tabla>
+            (
+            <columna>,
+            <columna>,
+            <columna>
+            ...
+            )
+            VALUES
+            (
+            <valor>,
+            <valor>,
+            <valor>
+            ...
+            )
+             */
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            bool error = false;
+
+            //Variables
+            string nombreTabla = "";
+
+            List<string> columnas = new List<string>();
+            List<string> valores = new List<string>();
+
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["INSERT INTO"]) && texto.Contains(palabrasReservadas["VALUES"]))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones (Manteniendo lo que estaba encerrado en parentesis intancto)
+                string[] sentences = separarStringConAlgoEncerrado(texto, ' ', '#');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 5 posiciones....
+                // [0]'Insert into' [1]nombre [2]columnas [3]'Values' [4]valores
+
+                //Recorrer cada uno de los fragmentos en array
+
+                if (sentences.Length == 5) //Verificar formato correcro de instrucciones
+                {
+                    if (sentences[0] != "α" || sentences[3] != "~") //Buscar errores
+                    {
+                        //To Do... 
+                        //Error... instrucciones incorrrectas
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[1];
+                        //Separar nommbre de columnas por coma
+                        string[] arrayColumnas = sentences[2].Split(',');
+                        //Corregir saltos de linea
+                        arrayColumnas = corregirArreglo(arrayColumnas);
+
+                        //Separar valores de columnas por coma, tomando en cuenta el apostrofe (')
+                        string[] arrayValores = separarStringConAlgoEncerrado(sentences[4], ',', '\u0027');
+                        //Corregir saltos de linea
+                        arrayValores = corregirArreglo(arrayValores);
+
+                        //Verificar que exista la misma cantidad de columnas que de valores
+                        if (arrayColumnas.Length == arrayValores.Length)
+                        {
+                            //Verificar que exista la tabla
+
+                            int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                            if (posicionTabla > -1)
+                            {
+                                //obtener las columnas de la tabla
+                                List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
+
+                                //Comparar columnas en tabla con las columnas ingresadas 
+
+                                //Arreglo con los valores ya en la posicion correcta
+                                string[] nuevoArrayValores = new string[columnasEnTabla.Count];
+
+                                for (int i = 0; i < arrayColumnas.Length; i++)
+                                {
+                                    //Verificar que la tabla contenga las columnas
+                                    if (columnasEnTabla.Contains(arrayColumnas[i]))
+                                    {
+                                        //posicion de la columna en la que se desea ingresar el valor
+                                        int pos = columnasEnTabla.FindIndex(x => x == arrayColumnas[i]);
+
+                                        //ingresar valor en la posicion correcta de tabla
+                                        nuevoArrayValores[pos] = arrayValores[i];
+                                    }
+                                    else
+                                    {
+                                        //To Do...
+                                        //Mensaje de error
+                                        //La tabla no contiene una de las columnas descritas 
+                                        error = true;
+                                        break;
+                                    }
+                                }
+                                //Verificar si no hubo un error en el proceso
+                                if (error != true)
+                                {
+                                    //---------------------------------------------------------------------------------------
+                                    //Instancia al metodo insertar en tabla.
+
+                                    //Ingresar array en arbol 
+                                    Controllers.HomeController.tablas[posicionTabla].insertarDatos(nuevoArrayValores);
+                                }
+                            }
+                            else
+                            {
+                                //To Do...
+                                //Error No existe la tabla
+                            }
+                        }
+                        else
+                        {
+                            //To DO... Mensaje de error
+                            //Cantidad de columnas es diferente a cantidad de valores que se desean ingresar
+                        }
+                    }
+                }
+                else
+                {
+                    //To Do... 
+                    //Error... instrucciones incorrrectas
+                }
+            }
+            else
+            {
+                //To Do..
+                //Error  formato incorrecto
+            }
+
+
+        }
+ 
         public static void seleccionarDatos(string texto) { } //To Do...
+
         public static void eliminarFilas(string texto) { } //To Do...
-        public static void eliminarTabla(string texto) { } //To Do...
+
+        //Extra...
         public static void actualizarDatos(string texto) { } //To Do...
 
     }
