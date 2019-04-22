@@ -10,6 +10,7 @@ namespace microSQL.Controllers
     {
         public static Dictionary<string, string> palabrasReservadas = new Dictionary<string, string>();
         public static List<Tabla> tablas = new List<Tabla>();
+        public static string mensaje = "";
 
         public ActionResult Index()
         {
@@ -22,6 +23,7 @@ namespace microSQL.Controllers
         [HttpPost]
         public ActionResult Index(string texto)
         {
+            mensaje = "";
             InterpreteSQL.leerInstrucciones(texto);
             return RedirectToAction("Index");
         }
