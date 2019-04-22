@@ -7,7 +7,6 @@ namespace microSQL
 {
     public class InterpreteSQL
     {
-
         //Intrucciones SQL...
         public static void leerInstrucciones(string texto) 
         {
@@ -16,8 +15,8 @@ namespace microSQL
 
             if (string.IsNullOrEmpty(texto)) //No se han escrito instrucciones
             {
-                //To Do...
                 //Mensaje de error
+                error("No se han escrito instrucciones");
             }
             else
             {
@@ -25,9 +24,8 @@ namespace microSQL
                 if (!texto.Contains(palabrasReservadas["GO"]))
                 {
                     //No se encontro el comando en las instrucciones
-
-                    //To Do...
                     //Mensaje de error
+                    error("No se encontró el comando 'GO' al final de las instrucciones");
                 }
                 else
                 {
@@ -83,15 +81,15 @@ namespace microSQL
                             }
                             else
                             {
-                                //To Do...
                                 //Mensaje de error (Formato Incorrecto)
+                                error("Formato incorrecto");
                             }
                         }
                     }
                     else
                     {
-                        //To Do...
                         //Error no se escribio 'GO'
+                        error("No se encontró el comando 'GO' al final de las insrucciones");
                     }
 
                 }
@@ -149,9 +147,7 @@ namespace microSQL
                     Resultado.Add(palabra); //Agregar al vector
                 }
             }
-
-            //string[] algo = texto.Split(separador);
-            //Resultado[5] = algo[algo.Length - 1];
+            
             return Resultado.ToArray();
         }
 
@@ -367,6 +363,31 @@ namespace microSQL
             return cola;
         } //Ya no sirve
 
+        private static void error()
+        {
+            //Escribir mensaje de error en pantalla
+
+            error("");
+        }
+
+        private static void error(string mensaje)
+        {
+            //Escribir mensaje de error en pantalla
+
+            if (String.IsNullOrEmpty(mensaje))
+            {
+                Controllers.HomeController.mensaje = "Error";
+            }
+            else if (mensaje.Contains("error") || mensaje.Contains("Error") || mensaje.Contains("ERROR"))
+            {
+                Controllers.HomeController.mensaje = mensaje;
+            }
+            else
+            {
+                Controllers.HomeController.mensaje = "Error: " + mensaje;
+            }
+        }
+
         //Metodos con instrucciones
         //--------------------------------------------------------------------------------------
 
@@ -537,15 +558,14 @@ namespace microSQL
                 }
                 else
                 {
-                    //To Do... 
                     //Mensaje de error, sintaxis incorrecta
+                    microSQL.InterpreteSQL.error("Syntax Error");
                 }
-
             }
             else
             {
-                //To Do..
                 //Error No se encontro una llave primaria
+                microSQL.InterpreteSQL.error("No se encontró una llave primaria. Use el comando 'PRIMARY KEY' para definirla");
             }
             
         }
@@ -599,19 +619,19 @@ namespace microSQL
                     }
                     else
                     {
-                        //Error
+                        error();
                     }
                 }
                 else
                 {
-                    //To Do... 
                     //Error... instrucciones incorrrectas
+                    microSQL.InterpreteSQL.error("Syntax Error");
                 }
             }
             else
             {
-                //To Do..
                 //Error
+                error();
             }
         } 
        
@@ -667,8 +687,8 @@ namespace microSQL
                 {
                     if (sentences[0] != "α" || sentences[3] != "~") //Buscar errores
                     {
-                        //To Do... 
                         //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
                     }
                     else
                     {
@@ -714,9 +734,11 @@ namespace microSQL
                                     }
                                     else
                                     {
-                                        //To Do...
                                         //Mensaje de error
                                         //La tabla no contiene una de las columnas descritas 
+
+                                        microSQL.InterpreteSQL.error("La tabla no contiene una de las columnas descritas");
+
                                         error = true;
                                         break;
                                     }
@@ -733,27 +755,28 @@ namespace microSQL
                             }
                             else
                             {
-                                //To Do...
                                 //Error No existe la tabla
+                                microSQL.InterpreteSQL.error("No existe la tabla");
                             }
                         }
                         else
                         {
-                            //To DO... Mensaje de error
+                            //Mensaje de error
                             //Cantidad de columnas es diferente a cantidad de valores que se desean ingresar
+                            microSQL.InterpreteSQL.error("Syntax Error");
                         }
                     }
                 }
                 else
                 {
-                    //To Do... 
                     //Error... instrucciones incorrrectas
+                    microSQL.InterpreteSQL.error("Syntax Error");
                 }
             }
             else
             {
-                //To Do..
                 //Error  formato incorrecto
+                microSQL.InterpreteSQL.error("Syntax Error");
             }
 
 
