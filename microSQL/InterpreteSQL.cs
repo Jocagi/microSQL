@@ -138,15 +138,15 @@ namespace microSQL
                     palabra += texto.Substring(count, 1);
                     count++;
                 }
-                else if (i == texto.Length - 1) //Ultimo valor del array
-                {
-                    Resultado.Add(palabra); //Agregar al vector
-                }
                 else
                 {
                     Resultado.Add(palabra); //Agregar al vector
                     palabra = ""; //Reiniciar palabra
                     count++;
+                }
+                if (i == texto.Length - 1) //Ultimo valor del array
+                {
+                    Resultado.Add(palabra); //Agregar al vector
                 }
             }
 
@@ -550,6 +550,71 @@ namespace microSQL
             
         }
 
+        public static void eliminarTabla(string texto)
+        {
+            /*
+            Ejemplo instrucciones:
+            DROP TABLE
+            <nombre de la tabla>   
+             */
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            
+            //Variables
+            string nombreTabla = "";
+            
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["DROP TABLE"]))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones
+                string[] sentences = texto.Split(' ');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 2 posiciones....
+                // [0]'DROP TABLE' [1]nombre
+
+                //Recorrer cada uno de los fragmentos en array
+
+                if (sentences.Length == 2) //Verificar formato correcro de instrucciones
+                {
+                    if (sentences[0] == "α")
+                    {
+                        //Definir nombre de tabla
+                        nombreTabla = sentences[1];
+
+                        //Verificar que tabla exista y buscarla
+                        int index = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+                        if (index > -1)
+                        {
+                            //Eliminar tabla
+                            //-----------------------------------------------------------------------
+                            Controllers.HomeController.tablas[index].eliminarTabla();
+                        }
+                    }
+                    else
+                    {
+                        //Error
+                    }
+                }
+                else
+                {
+                    //To Do... 
+                    //Error... instrucciones incorrrectas
+                }
+            }
+            else
+            {
+                //To Do..
+                //Error
+            }
+        } 
+       
         public static void insertarDatos(string texto) {
 
             /*
@@ -634,7 +699,7 @@ namespace microSQL
                                 //Comparar columnas en tabla con las columnas ingresadas 
 
                                 //Arreglo con los valores ya en la posicion correcta
-                                string[] nuevoArrayValores = new string[arrayColumnas.Length];
+                                string[] nuevoArrayValores = new string[columnasEnTabla.Count];
 
                                 for (int i = 0; i < arrayColumnas.Length; i++)
                                 {
@@ -659,6 +724,9 @@ namespace microSQL
                                 //Verificar si no hubo un error en el proceso
                                 if (error != true)
                                 {
+                                    //---------------------------------------------------------------------------------------
+                                    //Instancia al metodo insertar en tabla.
+
                                     //Ingresar array en arbol 
                                     Controllers.HomeController.tablas[posicionTabla].insertarDatos(nuevoArrayValores);
                                 }
@@ -668,14 +736,12 @@ namespace microSQL
                                 //To Do...
                                 //Error No existe la tabla
                             }
-                            
                         }
                         else
                         {
                             //To DO... Mensaje de error
                             //Cantidad de columnas es diferente a cantidad de valores que se desean ingresar
                         }
-
                     }
                 }
                 else
@@ -683,10 +749,6 @@ namespace microSQL
                     //To Do... 
                     //Error... instrucciones incorrrectas
                 }
-
-                //-----------------------------------
-                //Instancia al metodo insertar en tabla.
-                
             }
             else
             {
@@ -696,10 +758,12 @@ namespace microSQL
 
 
         }
-
+ 
         public static void seleccionarDatos(string texto) { } //To Do...
+
         public static void eliminarFilas(string texto) { } //To Do...
-        public static void eliminarTabla(string texto) { } //To Do...
+
+        //Extra...
         public static void actualizarDatos(string texto) { } //To Do...
 
     }

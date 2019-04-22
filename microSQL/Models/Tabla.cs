@@ -33,9 +33,12 @@ namespace microSQL
         //Archivos de tablas
         public static void leerAchivoTablas()
         {
+            //Eliminar tablas en controlador
+            Controllers.HomeController.tablas.Clear();
+
             //Resumen: Se leen todos los archivos de tablas y crea la lista en el controlador
 
-            string carpetaTabla = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas"); ;
+            string carpetaTabla = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas");
             string carpetaArbolB = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/arbolesb");
             
             //Se enlistan todos los archivos en la carpeta de tablas, se leen y definen las propiedades de un objeto tabla
@@ -230,12 +233,30 @@ namespace microSQL
             escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
         } 
 
-        public void insertarDatos(string[] valores) { } //To Do...
+        public void insertarDatos(string[] valores) {
+            //Se recibe un arreglo con valores ya en la posicion correcta, listo para insertar en arbol b
+        } //To Do...
 
         public void seleccionarDatos(string[] columnas) { } //To Do...
+
         public void seleccionarDatos(string[] columna, string valor) { /* //Operador =  //Operador 'Like' */} //To Do...
+
         public void eliminarFilas(string valor) { } //To Do...
-        public void eliminarTabla() { } //To Do...
+
+        public void eliminarTabla() {
+            //Elimina los archivos que hacen referencia a esta tabla
+
+            string path1 = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas") + "/" + nombreTabla + ".tabla";
+            string path2 = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/arbolesb") + "/" + nombreTabla + ".arbolb";
+
+            if (System.IO.File.Exists(path1) && System.IO.File.Exists(path2))
+            {
+                //Eliminar archivos
+                System.IO.File.Delete(path1);
+                System.IO.File.Delete(path2);
+            }
+        }
+
         //Extra... 
         public void actualizarDatos(string columna, string valorAntiguo, string nuevoValor) { } //To Do...
 

@@ -20,7 +20,7 @@
                 @foreach (var item in microSQL.Controllers.HomeController.tablas)
                 {
                     <li>
-                        <a href="www.google.com"><b>@item.nombreTabla</b></a>
+                        <b style="color:darkblue;">@item.nombreTabla</b>
                         <ul style="list-style-type:none;">
                             @foreach (var columna in item.columnas)
                             {
@@ -28,18 +28,7 @@
                             }
                         </ul>
                     </li>
-
                 }
-
-                <li>
-                    <a href="www.google.com"><b>Tabla 1</b></a>
-                    <ul style="list-style-type:none;">
-                        <li>ID</li>
-                        <li>Cantidad</li>
-                        <li>Precio</li>
-                        <li>Descripcion</li>
-                    </ul>
-                </li>
 
             </ul>
         </div>
