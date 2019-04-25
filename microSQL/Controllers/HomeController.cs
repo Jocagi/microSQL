@@ -11,7 +11,7 @@ namespace microSQL.Controllers
     {
         public static Dictionary<string, string> palabrasReservadas = new Dictionary<string, string>();
         public static List<Tabla> tablas = new List<Tabla>();
-        public static TablaVista tablaActual = new TablaVista();
+        public static TablaVista tablaActual = new TablaVista("Nueva tabla",new List<string> { "Columna 1", "Columna 2" , "Columna 3" , "Columna 4" }, null );
         public static string mensaje = "";
 
         public ActionResult Index()
@@ -21,7 +21,6 @@ namespace microSQL.Controllers
             palabrasReservadas = Configuracion.leerArchivoConfiguracion(); //configurar diccionario
             Tabla.leerAchivoTablas(); //leer tablas
 
-            tablaActual = new TablaVista(tablas[1].nombreTabla, tablas[1].columnas, tablas[1].filas);
             return View(tablaActual);
         }
         [HttpPost]

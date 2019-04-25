@@ -28,6 +28,14 @@ namespace microSQL
             this.columnas = nombresColumnas;
             this.columnaLlave = llaveColumna;
         }
+        private Tabla(string nombre, List<string> tiposDeDatos, List<string> nombresColumnas, string llaveColumna, List<string[]> filas)
+        {
+            this.nombreTabla = nombre;
+            this.tiposDeDatos = tiposDeDatos;
+            this.columnas = nombresColumnas;
+            this.columnaLlave = llaveColumna;
+            this.filas = filas;
+        }
         //To Do... Hacer sobrecarga a constructor que incluya al arbol B
 
         //Archivos de tablas
@@ -51,15 +59,16 @@ namespace microSQL
                 string nombreTabla;
                 List<string> datos = new List<string>();
                 List<string> columnas = new List<string>();
+                List<string[]> filas = new List<string[]>();
                 string llave = "";
 
                 nombreTabla = archivo.Name.Replace(".tabla", "");
 
                 leerArchivoConfiguracionTabla(carpetaTabla + "/" + nombreTabla + ".tabla", ref datos, ref columnas, ref llave);
-                leerArchivoArbolB(carpetaArbolB + "/" + nombreTabla + ".arbolb");
+                leerArchivoArbolB(carpetaArbolB + "/" + nombreTabla + ".arbolb", ref filas);
 
                 //Agregar tabla a lista
-                Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, llave));
+                Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, llave, filas));
             }
         }
 
@@ -104,7 +113,34 @@ namespace microSQL
                 }
             }
         }
-        private static void leerArchivoArbolB(string path) { } //To Do...
+        private static void leerArchivoArbolB(string path, ref List<string[]> filas)
+        {
+            //To Do... Modificar para Arbol B
+
+            if (!String.IsNullOrEmpty(path))
+            {
+                if (File.Exists(path))
+                {
+                    using (var reader = new StreamReader(path))
+                    {
+                        
+                        while (!reader.EndOfStream) //Recorrer archivo hasta el final
+                        {
+                            var line = reader.ReadLine(); //linea actual
+                            
+                            string[] palabras = line.Split(','); //dividir datos seprados por coma
+
+                            filas.Add(palabras); //Anadir arreglo de filas
+                        }
+                    }
+                }
+                else
+                {
+                    Controllers.HomeController.mensaje = "No se encontro el archivo";
+                }
+            }
+
+        }
 
         private void crearArchivo(string path)
         {
@@ -164,8 +200,7 @@ namespace microSQL
             }
             else
             {
-                //To Do... 
-                //Error archivo no existe
+                Controllers.HomeController.mensaje = "El archivo no existe";
             }
         }
 
@@ -232,15 +267,24 @@ namespace microSQL
             escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
             escribirEnArchivo(this.columnas, rutaColumnas);
             escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
+
+            //Mostrar en pantalla la nueva tabla
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
         }
 
         public void insertarDatos(string[] valores)
         {
-            //Se recibe un arreglo con valores ya en la posicion correcta, listo para insertar en arbol b
+            string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+            string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
 
-            //To Do...
+            //Anadir filas a archivo
 
-            filas.Add(valores);
+            escribirEnArchivo(valores.ToList(), rutaFilas);
+
+            //Mostrar en pantalla la incersion
+
+            this.filas.Add(valores);
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, this.filas);
         }
 
         public void seleccionarDatos(string[] columnas)
