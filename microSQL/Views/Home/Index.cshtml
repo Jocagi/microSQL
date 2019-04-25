@@ -1,21 +1,16 @@
 ﻿
-@model microSQL.Tabla
+@model microSQL.Models.TablaVista
 @{
     ViewBag.Title = "microSQL";
 }
-
 <body>
     <div>
         <h2>microSQL</h2>
     </div>
-
     <div style="column-count:2;">
-
         <div style="width:500px;height:250px;overflow:auto;background-color:lightgray;">
-
             <h2>Object Explorer</h2>
             <br />
-
             <ul style="list-style-type:none;">
                 @foreach (var item in microSQL.Controllers.HomeController.tablas)
                 {
@@ -31,9 +26,7 @@
                 }
             </ul>
         </div>
-
         <br />
-
         <div>
             @using (Html.BeginForm())
             {
@@ -44,78 +37,46 @@
         </div>
         <br>
         <p style="color:red">
-          @microSQL.Controllers.HomeController.mensaje  
+            @microSQL.Controllers.HomeController.mensaje
         </p>
-
     </div>
-
     <br />
-
     <div class="jumbotron">
+        @if (Model.nombreTabla != null && Model.columnas != null)
+        {
+            <h2>@Model.nombreTabla</h2>
 
-        <h2>Tabla 1</h2>
+            <br />
 
-        <br />
+            <table class="table">
+                <tr>
 
-        <table class="table">
+                    @foreach (var item in Model.columnas)
+                    {
+                        <th>
+                            @item
+                        </th>
+                    }
+                </tr>
 
-            <tr>
-                <th>
-                    ID
-                </th>
-                <th>
-                    Cantidad
-                </th>
-                <th>
-                    Precio
-                </th>
-                <th>
-                    Descripcion
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    1
-                </th>
-                <th>
-                    5
-                </th>
-                <th>
-                    13.5
-                </th>
-                <th>
-                    Objeto 1
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    2
-                </th>
-                <th>
-                    7
-                </th>
-                <th>
-                    28.3
-                </th>
-                <th>
-                    Objeto 2
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    3
-                </th>
-                <th>
-                    10
-                </th>
-                <th>
-                    5.00
-                </th>
-                <th>
-                    Objeto 3
-                </th>
-            </tr>
-        </table>
+                @if (Model.filasSeleccionadas != null)
+                {
+
+                    foreach (var item in Model.filasSeleccionadas)
+                    {
+                        <tr>
+                            @foreach (var item2 in item)
+                            {
+                                <th>
+                                    @item2
+                                </th>
+                            }
+                        </tr>
+                    }
+
+                }
+
+            </table>
+        }
     </div>
-
 </body>

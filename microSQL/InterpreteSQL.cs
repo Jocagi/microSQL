@@ -8,7 +8,7 @@ namespace microSQL
     public class InterpreteSQL
     {
         //Intrucciones SQL...
-        public static void leerInstrucciones(string texto) 
+        public static void leerInstrucciones(string texto)
         {
             //Leer palabras reservadas
             Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
@@ -32,14 +32,14 @@ namespace microSQL
                     /*Se separaran todas las instrucciones con la plabra 'GO', luego se reemplazaran las palabras reservadas 
                       y tipos de datos por caracteres griegos (por simplicidad) para identificar donde comienzan y terminar 
                       las distintas partes de la instruccion */
-                      
+
                     //separar diferentes instrucciones
 
                     List<string> instrucciones = separarComandos(texto).ToList();
 
 
                     //Verificar si la palabra final fue un 'GO'
-                    instrucciones[instrucciones.Count - 1] = instrucciones.Last().Replace(" " , "");
+                    instrucciones[instrucciones.Count - 1] = instrucciones.Last().Replace(" ", "");
 
                     if (instrucciones.Last() == "")
                     {
@@ -48,7 +48,7 @@ namespace microSQL
                         //Recorrer instrucciones
                         foreach (var item in instrucciones)
                         {
-                            
+
                             //Verificar formato
                             if (!contienePalabrasReservadas(item))
                             {
@@ -147,7 +147,7 @@ namespace microSQL
                     Resultado.Add(palabra); //Agregar al vector
                 }
             }
-            
+
             return Resultado.ToArray();
         }
 
@@ -160,19 +160,20 @@ namespace microSQL
             //Convertir saltos de linea en espacios
             texto = texto.Replace('\u000D', ' ');
             texto = texto.Replace('\u000A', ' ');
-            
+
             //To DO...
             //Verificar palabra 'GO' al final
 
 
             //Reemplazar el valor de la palabra GO con un simbolo ~ para separarlo facilmente
             texto = texto.Replace(palabrasReservadas["GO"], "~");
-            
+
             return texto.Split('~');
-            
+
         }
 
-        private static bool contienePalabrasReservadas(string texto) {
+        private static bool contienePalabrasReservadas(string texto)
+        {
             //Resumen: Verifica si el texto posee otra palabra reservada que no sea el comando principal... debido a que cada instruccion solo deberi tener una de estas palabras...
             bool encontrado = false;
             int contador = 0;
@@ -180,7 +181,7 @@ namespace microSQL
 
             foreach (var item in palabrasReservadas)
             {
-                if (item.Value == palabrasReservadas["CREATE TABLE"] || item.Value == palabrasReservadas["INSERT INTO"] || item.Value == palabrasReservadas["DELETE"] || item.Value == palabrasReservadas["DROP TABLE"] || item.Value == palabrasReservadas["UPDATE"])
+                if (item.Value == palabrasReservadas["CREATE TABLE"] || item.Value == palabrasReservadas["INSERT INTO"] || item.Value == palabrasReservadas["SELECT"] || item.Value == palabrasReservadas["DELETE"] || item.Value == palabrasReservadas["DROP TABLE"] || item.Value == palabrasReservadas["UPDATE"])
                 {
                     //Verificar si el texto posee una palaba prohibida
                     if (texto.Contains(item.Value))
@@ -278,7 +279,7 @@ namespace microSQL
             string[] nuevoTexto = texto.Split(' ');
             nuevoTexto = eliminarPosicionesVacias(nuevoTexto);
 
-            string resultado =  "";
+            string resultado = "";
 
             foreach (var item in nuevoTexto)
             {
@@ -330,7 +331,7 @@ namespace microSQL
                                 Ω          DATETIME
 
                             */
-            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();  
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
             Dictionary<string, string> diccionario = new Dictionary<string, string>();
             diccionario.Add(palabrasReservadas["CREATE TABLE"], "α");
             diccionario.Add(palabrasReservadas["INSERT INTO"], "α");
@@ -349,7 +350,7 @@ namespace microSQL
 
             return diccionario;
         } //Ya no sirve
-        
+
         private static Queue<char> encolarCaracteres(string texto)
         {
             List<char> caracteres = texto.ToList<char>();
@@ -388,10 +389,44 @@ namespace microSQL
             }
         }
 
+        private static string modificarCadenaParaBusquedas(string texto)
+        {
+            //El proposito de este metodo es resolver un problema al recibir una cadena con el metodo 'SELECT'
+            //y separar adecuadamente el texto
+
+
+            // Se agregan los caracteres # # al inicio y al final de la parte en la que se enccuentra la descripcion de las columnas
+            string resultado = "";
+
+            if (!String.IsNullOrEmpty(texto))
+            {
+                foreach (char letra in texto)
+                {
+                    switch (letra)
+                    {
+                        case 'α':
+                            resultado += (letra + " # ");
+                            break;
+                        case 'Δ':
+                            resultado += (" # " + letra);
+                            break;
+                        default:
+                            resultado += letra;
+                            break;
+                    }
+                }
+
+            }
+
+            return resultado;
+
+        }
+
         //Metodos con instrucciones
         //--------------------------------------------------------------------------------------
 
-        public static void crearTabla(string texto) {
+        public static void crearTabla(string texto)
+        {
 
             /*
             Ejemplo instrucciones:
@@ -408,7 +443,7 @@ namespace microSQL
             //Pasos a seguir...
             bool buscarNombreTabla = false;
             bool buscarLlavePrimaria = false;
-            
+
             bool error = false;
 
             //Variables
@@ -420,7 +455,7 @@ namespace microSQL
             //Comienza Procedimiento........................
 
             //Buscar si el texto posee una llave primaria
-            if (texto.Contains("PRIMARY KEY")) 
+            if (texto.Contains("PRIMARY KEY"))
             {
                 //Reemplazar palabras reservadas por caracteres simples
                 texto = sustituirPalabrasReservadasPorCaracteres(texto);
@@ -462,7 +497,7 @@ namespace microSQL
                             }
                         }
                         //Paso 3 Buscar Listado de Columnas
-                        else if ( sentences[i] != "" && buscarNombreTabla == true)
+                        else if (sentences[i] != "" && buscarNombreTabla == true)
                         {
                             string[] listado = sentences[i].Split(',');
 
@@ -567,7 +602,7 @@ namespace microSQL
                 //Error No se encontro una llave primaria
                 microSQL.InterpreteSQL.error("No se encontró una llave primaria. Use el comando 'PRIMARY KEY' para definirla");
             }
-            
+
         }
 
         public static void eliminarTabla(string texto)
@@ -579,10 +614,10 @@ namespace microSQL
              */
 
             Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
-            
+
             //Variables
             string nombreTabla = "";
-            
+
             //Comienza Procedimiento........................
 
             //Buscar si el texto posee los comandos correctos
@@ -633,9 +668,10 @@ namespace microSQL
                 //Error
                 error();
             }
-        } 
-       
-        public static void insertarDatos(string texto) {
+        }
+
+        public static void insertarDatos(string texto)
+        {
 
             /*
             Ejemplo instrucciones:
@@ -778,11 +814,160 @@ namespace microSQL
                 //Error  formato incorrecto
                 microSQL.InterpreteSQL.error("Syntax Error");
             }
+        }
+
+        public static void seleccionarDatos(string texto)
+        {
+            /*Ejemplo Instrucciones:
+             1.
+                SELECT
+                <NOMBRE DE LA COLUMNA>,
+                ...
+                FROM
+                <NOMBRE DE LA TABLA>
+             2.
+                SELECT
+                *
+                FROM
+                <NOMBRE DE LA TABLA>
+             3.
+                WHERE
+                ID = <VALOR>
+             4.
+                WHERE
+                ID LIKE '<VALOR>%'
+             */
+
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            bool error = false;
+
+            //Variables
+            string nombreTabla = "";
+            List<string> columnas = new List<string>();
+            string buscar = "";
+
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["SELECT"]) && texto.Contains(palabrasReservadas["FROM"]))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones 
+
+                texto = modificarCadenaParaBusquedas(texto);
+
+                string[] sentences = separarStringConAlgoEncerrado(texto, ' ', '#');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 5 posiciones....
+                // [0]'SELECT' [1] columnas / * [2]'FROM' [3]tabla [4]'WHERE' [5]<columna> [6] = / 'LIKE' [7] <valor>
+
+
+                //Verificar formato correcto de instrucciones y definir tipo de busqueeda
+
+                //No se busca una fila con un valor especifico
+                if (sentences.Length == 4)
+                {
+                    //         Δ FROM
+                    //         | WHERE
+
+
+                    if (sentences[0] != "α" || sentences[2] != "Δ") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[3];
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+
+                            //obtener las columnas de la tabla
+                            List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
+
+                            //Separar nommbre de columnas por coma
+                            string[] arrayColumnas = sentences[1].Split(',');
+                            //Corregir saltos de linea
+                            arrayColumnas = corregirArreglo(arrayColumnas);
+
+                            if (arrayColumnas[0] == "*") //Comprobar si se seleccionan todas las columnas con *
+                            {
+                                if (arrayColumnas.Length > 1)
+                                {
+                                    error = true;
+                                }
+                                else
+                                {
+                                    arrayColumnas = columnasEnTabla.ToArray();
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < arrayColumnas.Length; i++)
+                                {
+                                    //Verificar que la tabla contenga las columnas
+                                    if (!columnasEnTabla.Contains(arrayColumnas[i]))
+                                    {
+                                        //Mensaje de error
+                                        //La tabla no contiene una de las columnas descritas 
+
+                                        microSQL.InterpreteSQL.error("La tabla no contiene una de las columnas descritas");
+
+                                        error = true;
+                                        break;
+                                    }
+
+                                }
+                            }
+
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo seleccionar en tabla.
+
+                                Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas);
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
+                }
+
+                //Se busca una fila usando el comando 'LIKE' o con =
+                else if (sentences.Length == 7)
+                {
+
+                }
+
+                else
+                {
+                    //Error... instrucciones incorrrectas
+                    microSQL.InterpreteSQL.error("Syntax Error");
+                }
+            }
+            else
+            {
+                //Error  formato incorrecto
+                microSQL.InterpreteSQL.error("Syntax Error");
+            }
 
 
         }
- 
-        public static void seleccionarDatos(string texto) { } //To Do...
 
         public static void eliminarFilas(string texto) { } //To Do...
 

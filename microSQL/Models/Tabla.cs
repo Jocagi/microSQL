@@ -11,12 +11,12 @@ namespace microSQL
     public class Tabla
     {
         public string nombreTabla { get; set; }
-        
+
         public List<string> tiposDeDatos { get; set; }
         public List<string> columnas { get; set; }
 
         public string columnaLlave { get; set; } //nombre de llave primaria en 'columnas'
-        public List<List<string>> filas { get; set; } //To Do... Cambiar lista por arbol B
+        public List<string[]> filas = new List<string[]>(); //To Do... Cambiar lista por arbol B
 
 
         //Constructor
@@ -40,11 +40,11 @@ namespace microSQL
 
             string carpetaTabla = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas");
             string carpetaArbolB = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/arbolesb");
-            
+
             //Se enlistan todos los archivos en la carpeta de tablas, se leen y definen las propiedades de un objeto tabla
             DirectoryInfo info = new DirectoryInfo(carpetaTabla);
             FileInfo[] listaArchivosEnCarpeta = info.GetFiles();
-            
+
             foreach (var archivo in listaArchivosEnCarpeta)
             {
                 //Variables
@@ -52,7 +52,7 @@ namespace microSQL
                 List<string> datos = new List<string>();
                 List<string> columnas = new List<string>();
                 string llave = "";
-                
+
                 nombreTabla = archivo.Name.Replace(".tabla", "");
 
                 leerArchivoConfiguracionTabla(carpetaTabla + "/" + nombreTabla + ".tabla", ref datos, ref columnas, ref llave);
@@ -122,7 +122,7 @@ namespace microSQL
                 file.Close();
             }
         }
-        
+
         private void escribirEnArchivo(List<string> texto, string path)
         {
             if (System.IO.File.Exists(path))
@@ -206,7 +206,8 @@ namespace microSQL
 
         //Metodos derivados de instrucciones SQL
         //---------------------------------------------------------
-        public void crearTabla(string nombre, string llave, List<string> col, List<string> datos) {
+        public void crearTabla(string nombre, string llave, List<string> col, List<string> datos)
+        {
 
             //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
             //Se define las propiedades de esta tabla y se crean sus archivos
@@ -231,19 +232,81 @@ namespace microSQL
             escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
             escribirEnArchivo(this.columnas, rutaColumnas);
             escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
-        } 
+        }
 
-        public void insertarDatos(string[] valores) {
+        public void insertarDatos(string[] valores)
+        {
             //Se recibe un arreglo con valores ya en la posicion correcta, listo para insertar en arbol b
-        } //To Do...
 
-        public void seleccionarDatos(string[] columnas) { } //To Do...
+            //To Do...
 
-        public void seleccionarDatos(string[] columnas, string buscar) { /* //Operador =  //Operador 'Like' */} //To Do...
+            filas.Add(valores);
+        }
+
+        public void seleccionarDatos(string[] columnas)
+        {
+
+            //Se selcceccionan todas las filas, pero solo ciertas columnas
+
+            List<int> indexColumnas = new List<int>();
+            List<string[]> filasSeleccionadas = new List<string[]>();
+            List<string> fila = new List<string>();
+
+            //Recorrer todas las filas y eliminar las posiciones de columnas
+
+            foreach (var item in columnas)
+            {
+                if (this.columnas.Contains(item)) //verificar si se encuentra en la lista
+                {
+                    //Agregar a los indices de columnas
+                    indexColumnas.Add(this.columnas.FindIndex(x => x == item)); //buscar indice
+                }
+            }
+
+            //Ordenar indices
+            indexColumnas.Sort();
+
+            //To Do...  Busqueda en arbol B
+
+            foreach (var arreglo in filas)
+            {
+                for (int i = 0; i < arreglo.Length; i++)
+                {
+                    if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
+                    {
+                        fila.Add(arreglo[i]);
+                    }
+                }
+
+                //Agregar fila actual a las filas seleccionadas
+                filasSeleccionadas.Add(fila.ToArray());
+
+                fila.Clear();
+            }
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), filasSeleccionadas);
+        }
+
+        public void seleccionarDatos(string[] columnas, string buscar, bool like)
+        {
+
+            //Se selcceccionan ciertas filas, y solo ciertas columnas
+
+            /* //Operador =  //Operador 'Like' */
+
+            //Si se busca un valor igual like sera falso
+            //Si se busca un valor del tipo %m, like sera true
+
+            //To Do...
+
+
+        }
 
         public void eliminarFilas(string buscar) { } //To Do...
 
-        public void eliminarTabla() {
+        public void eliminarTabla()
+        {
             //Elimina los archivos que hacen referencia a esta tabla
 
             string path1 = System.Web.HttpContext.Current.Server.MapPath("~/microSQL/tablas") + "/" + nombreTabla + ".tabla";
