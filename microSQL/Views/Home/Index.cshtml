@@ -30,7 +30,7 @@
         <div>
             @using (Html.BeginForm())
             {
-                @Html.TextArea("texto", null, new { style = "width:500px; height:250px;" })
+                @Html.TextArea("texto", microSQL.Controllers.HomeController.textoInstrucciones, new { style = "width:500px; height:250px;" })
                 @*<textarea name="textarea" style="width:500px;height:250px;"></textarea>*@
                 <input type="submit" value="Go" />
             }

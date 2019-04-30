@@ -949,13 +949,13 @@ namespace microSQL
                 }
 
                 //Se busca una fila usando el comando 'LIKE' o con =
-                else if (sentences.Length == 7)
+                else if (sentences.Length == 8)
                 {
                     //         Δ FROM
                     //         | WHERE
                     //         % LIKE
 
-                    if (sentences[0] != "α" || sentences[2] != "Δ" || sentences[6] != "%") //Buscar errores
+                    if (sentences[0] != "α" || sentences[2] != "Δ") //Buscar errores
                     {
                         //Error... instrucciones incorrrectas
                         microSQL.InterpreteSQL.error("Syntax Error");
@@ -1001,7 +1001,13 @@ namespace microSQL
                                         error = true;
                                         break;
                                     }
+                                }
 
+                                //Verificar llave de la tabla
+                                if (sentences[5] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                                {
+                                    microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                                    error = true;
                                 }
                             }
 

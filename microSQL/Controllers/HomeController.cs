@@ -27,11 +27,11 @@ namespace microSQL.Controllers
         [HttpPost]
         public ActionResult Index(string texto)
         {
-            textoInstrucciones = texto;
+            textoInstrucciones = "";
             mensaje = "";
             InterpreteSQL.leerInstrucciones(texto);
 
-            if (mensaje != "") //Mantener texto escrito en pantalla, en caso de un error.
+            if (String.IsNullOrEmpty(mensaje)) //Mantener texto escrito en pantalla, en caso de un error.
             {
                 textoInstrucciones = texto;
             }
