@@ -32,10 +32,11 @@
             {
                 @Html.TextArea("texto", microSQL.Controllers.HomeController.textoInstrucciones, new { style = "width:500px; height:250px;" })
                 @*<textarea name="textarea" style="width:500px;height:250px;"></textarea>*@
-                <input type="submit" value="Go" />
+                <input type="submit" value="RUN" />
             }
         </div>
         <br>
+        <!-- Mensaje de error -->
         <p style="color:red">
             @microSQL.Controllers.HomeController.mensaje
         </p>
