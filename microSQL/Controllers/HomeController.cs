@@ -31,7 +31,7 @@ namespace microSQL.Controllers
             mensaje = "";
             InterpreteSQL.leerInstrucciones(texto);
 
-            if (String.IsNullOrEmpty(mensaje)) //Mantener texto escrito en pantalla, en caso de un error.
+            if (!String.IsNullOrEmpty(mensaje)) //Mantener texto escrito en pantalla, en caso de un error.
             {
                 textoInstrucciones = texto;
             }

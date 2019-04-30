@@ -976,7 +976,7 @@ namespace microSQL
                             List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
                             string[] arrayColumnas;
 
-                            if (sentences[1] == "*") //Comprobar si se seleccionan todas las columnas con *
+                            if (sentences[1].Contains("*")) //Comprobar si se seleccionan todas las columnas con *
                             {
                                 arrayColumnas = columnasEnTabla.ToArray(); //Seleccionar todas las columnas
                             }
@@ -1021,7 +1021,7 @@ namespace microSQL
                                 {
                                     Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], false);
                                 }
-                                else if (sentences[6] == palabrasReservadas["LIKE"])
+                                else if (sentences[6] == "LIKE")
                                 {
                                     Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], true);
                                 }
