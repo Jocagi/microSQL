@@ -272,6 +272,13 @@ namespace microSQL
             microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
         }
 
+        private bool verificarTiposDeDatos(List<string> tiposDeDatos, List<string> columnas)
+        {
+            //Verificar que cada columna corresponda asu tipo de dato
+
+            return true;
+        } //To Do...
+
         public void insertarDatos(string[] valores)
         {
             string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
@@ -336,9 +343,7 @@ namespace microSQL
         {
 
             //Se selcceccionan ciertas filas, y solo ciertas columnas
-
-            /* //Operador =  //Operador 'Like' */
-
+            
             //Si se busca un valor igual like sera falso
             //Si se busca un valor del tipo %m, like sera true
 

@@ -390,7 +390,7 @@ namespace microSQL
         }
 
         private static string modificarCadenaParaBusquedas(string texto)
-        {
+        { 
             //El proposito de este metodo es resolver un problema al recibir una cadena con el metodo 'SELECT'
             //y separar adecuadamente el texto
 
@@ -951,7 +951,87 @@ namespace microSQL
                 //Se busca una fila usando el comando 'LIKE' o con =
                 else if (sentences.Length == 7)
                 {
+                    //         Δ FROM
+                    //         | WHERE
+                    //         % LIKE
 
+                    if (sentences[0] != "α" || sentences[2] != "Δ" || sentences[6] != "%") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[3];
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+
+                            //obtener las columnas de la tabla
+                            List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
+                            string[] arrayColumnas;
+
+                            if (sentences[1] == "*") //Comprobar si se seleccionan todas las columnas con *
+                            {
+                                arrayColumnas = columnasEnTabla.ToArray(); //Seleccionar todas las columnas
+                            }
+                            else
+                            {
+                                //Separar nommbre de columnas por coma
+                                arrayColumnas = sentences[1].Split(',');
+                                //Corregir saltos de linea
+                                arrayColumnas = corregirArreglo(arrayColumnas);
+
+
+                                for (int i = 0; i < arrayColumnas.Length; i++)
+                                {
+                                    //Verificar que la tabla contenga las columnas
+                                    if (!columnasEnTabla.Contains(arrayColumnas[i]))
+                                    {
+                                        //Mensaje de error
+                                        //La tabla no contiene una de las columnas descritas 
+
+                                        microSQL.InterpreteSQL.error("La tabla no contiene una de las columnas descritas");
+
+                                        error = true;
+                                        break;
+                                    }
+
+                                }
+                            }
+
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo seleccionar en tabla.
+
+                                if (sentences[6] == "=")
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], false);
+                                }
+                                else if (sentences[6] == palabrasReservadas["LIKE"])
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], true);
+                                }
+                                else
+                                {
+                                    //Error
+                                    microSQL.InterpreteSQL.error("Syntax Error");
+                                }    
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
                 }
 
                 else

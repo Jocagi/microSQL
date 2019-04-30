@@ -13,6 +13,7 @@ namespace microSQL.Controllers
         public static List<Tabla> tablas = new List<Tabla>();
         public static TablaVista tablaActual = new TablaVista("Nueva tabla",new List<string> { "Columna 1", "Columna 2" , "Columna 3" , "Columna 4" }, null );
         public static string mensaje = "";
+        public static string textoInstrucciones = ""; 
 
         public ActionResult Index()
         {
@@ -26,8 +27,15 @@ namespace microSQL.Controllers
         [HttpPost]
         public ActionResult Index(string texto)
         {
+            textoInstrucciones = texto;
             mensaje = "";
             InterpreteSQL.leerInstrucciones(texto);
+
+            if (mensaje != "") //Mantener texto escrito en pantalla, en caso de un error.
+            {
+                textoInstrucciones = texto;
+            }
+
             return RedirectToAction("Index");
         }
 
