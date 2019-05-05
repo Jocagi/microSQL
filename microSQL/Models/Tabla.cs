@@ -426,7 +426,64 @@ namespace microSQL
             
         }
 
-        public void eliminarFilas(string buscar) { } //To Do...
+        public void eliminarFila(string buscar, bool like)
+        {
+            //Si se busca un valor igual like sera falso
+            //Si se busca un valor del tipo %m, like sera true
+
+            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
+
+
+            //To Do...  Arreglar Busqueda en arbol B
+            
+            //Realizar busqueda
+            
+                foreach (var arreglo in filas)
+                {
+                    try
+                    {
+
+                    //Verificar si coincide con la busqueda '='
+                    if (arreglo[indexLlave] == buscar && like == false)
+                    {
+                        //eliminar fila
+                        this.filas.Remove(arreglo);
+                    }
+
+                    //Verificar si coincide con la busqueda 'LIKE'
+                    if (like == true)
+                    {
+                        buscar = buscar.Replace("%", "");
+
+                        if (arreglo[indexLlave].StartsWith(buscar))
+                        {
+                            //eliminar fila
+                            this.filas.Remove(arreglo);
+                        }
+                    }
+                }
+                catch (Exception)
+                    {
+                        microSQL.InterpreteSQL.error("Error desconocido");
+                        throw;
+                    }
+                    
+                }
+            
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+
+        }
+
+        public void eliminarTodasLasFilas()
+        {
+            this.filas.Clear(); //Eliminar todo
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+
+        }
 
         public void eliminarTabla()
         {
