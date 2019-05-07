@@ -501,7 +501,10 @@ namespace microSQL
         }
 
         //Extra... 
-        public void actualizarDatos(string columna, string valorAntiguo, string nuevoValor) { } //To Do...
+        public void actualizarDatos(string columna, string id, string nuevoValor)
+        {
+
+        } 
 
         //Extra
         public void exportarJSON() { } //To Do...
