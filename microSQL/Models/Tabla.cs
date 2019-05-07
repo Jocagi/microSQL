@@ -272,6 +272,13 @@ namespace microSQL
             microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
         }
 
+        private bool verificarTiposDeDatos(List<string> tiposDeDatos, List<string> columnas)
+        {
+            //Verificar que cada columna corresponda asu tipo de dato
+
+            return true;
+        } //To Do...
+
         public void insertarDatos(string[] valores)
         {
             string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
@@ -337,17 +344,146 @@ namespace microSQL
 
             //Se selcceccionan ciertas filas, y solo ciertas columnas
 
-            /* //Operador =  //Operador 'Like' */
-
             //Si se busca un valor igual like sera falso
             //Si se busca un valor del tipo %m, like sera true
 
-            //To Do...
+            List<int> indexColumnas = new List<int>();
+            List<string[]> filasSeleccionadas = new List<string[]>();
+            List<string> fila = new List<string>();
+            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
 
+            //Recorrer todas las filas y eliminar las posiciones de columnas
+
+            foreach (var item in columnas)
+            {
+                if (this.columnas.Contains(item)) //verificar si se encuentra en la lista
+                {
+                    //Agregar a los indices de columnas
+                    indexColumnas.Add(this.columnas.FindIndex(x => x == item)); //buscar indice
+                }
+            }
+
+            //Ordenar indices
+            indexColumnas.Sort();
+
+
+            //To Do...  Arreglar Busqueda en arbol B
+
+
+            //Realizar busqueda
+            if (like == false) // Se realiza una busqueda con operador =
+            {
+                foreach (var arreglo in filas)
+                {
+                    for (int i = 0; i < arreglo.Length; i++)
+                    {
+                        if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
+                        {
+                            fila.Add(arreglo[i]);
+                        }
+                    }
+
+                    //Verificar si coincide con la busqueda '='
+                    if (fila[indexLlave] == buscar)
+                    {
+                        //Agregar fila actual a las filas seleccionadas
+                        filasSeleccionadas.Add(fila.ToArray());
+
+                    }
+
+                    fila.Clear();
+                }
+            }
+            else // Se realiza una busqueda con operador LIKE
+            {
+                foreach (var arreglo in filas)
+                {
+                    for (int i = 0; i < arreglo.Length; i++)
+                    {
+                        if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
+                        {
+                            fila.Add(arreglo[i]);
+                        }
+                    }
+
+                    //Verificar si coincide con la busqueda 'LIKE'
+                    buscar = buscar.Replace("%", "");
+
+                    if (fila[indexLlave].StartsWith(buscar)) //To Do... Corregir para hacer busquedas correctamente, solo busca si contiene 'm'
+                    {
+                        //Agregar fila actual a las filas seleccionadas
+                        filasSeleccionadas.Add(fila.ToArray());
+
+                    }
+
+                    fila.Clear();
+                }
+            }
+
+            
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), filasSeleccionadas);
+            
+        }
+
+        public void eliminarFila(string buscar, bool like)
+        {
+            //Si se busca un valor igual like sera falso
+            //Si se busca un valor del tipo %m, like sera true
+
+            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
+
+
+            //To Do...  Arreglar Busqueda en arbol B
+            
+            //Realizar busqueda
+            
+                foreach (var arreglo in filas)
+                {
+                    try
+                    {
+
+                    //Verificar si coincide con la busqueda '='
+                    if (arreglo[indexLlave] == buscar && like == false)
+                    {
+                        //eliminar fila
+                        this.filas.Remove(arreglo);
+                    }
+
+                    //Verificar si coincide con la busqueda 'LIKE'
+                    if (like == true)
+                    {
+                        buscar = buscar.Replace("%", "");
+
+                        if (arreglo[indexLlave].StartsWith(buscar))
+                        {
+                            //eliminar fila
+                            this.filas.Remove(arreglo);
+                        }
+                    }
+                }
+                catch (Exception)
+                    {
+                        microSQL.InterpreteSQL.error("Error desconocido");
+                        throw;
+                    }
+                    
+                }
+            
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
 
         }
 
-        public void eliminarFilas(string buscar) { } //To Do...
+        public void eliminarTodasLasFilas()
+        {
+            this.filas.Clear(); //Eliminar todo
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+
+        }
 
         public void eliminarTabla()
         {

@@ -263,7 +263,9 @@ namespace microSQL
 
             foreach (var item in array)
             {
-                if (item != "")
+                string temp = item.Replace(" ", ""); //Corregir error en el que se colaban posiciones sólo con espacios
+
+                if (item != "" && temp != "")
                 {
                     nuevoArray.Add(item);
                 }
@@ -371,7 +373,7 @@ namespace microSQL
             error("");
         }
 
-        private static void error(string mensaje)
+        public static void error(string mensaje)
         {
             //Escribir mensaje de error en pantalla
 
@@ -390,7 +392,7 @@ namespace microSQL
         }
 
         private static string modificarCadenaParaBusquedas(string texto)
-        {
+        { 
             //El proposito de este metodo es resolver un problema al recibir una cadena con el metodo 'SELECT'
             //y separar adecuadamente el texto
 
@@ -949,9 +951,95 @@ namespace microSQL
                 }
 
                 //Se busca una fila usando el comando 'LIKE' o con =
-                else if (sentences.Length == 7)
+                else if (sentences.Length == 8)
                 {
+                    //         Δ FROM
+                    //         | WHERE
+                    //         % LIKE
 
+                    if (sentences[0] != "α" || sentences[2] != "Δ") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[3];
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+
+                            //obtener las columnas de la tabla
+                            List<string> columnasEnTabla = Controllers.HomeController.tablas[posicionTabla].columnas;
+                            string[] arrayColumnas;
+
+                            if (sentences[1].Contains("*")) //Comprobar si se seleccionan todas las columnas con *
+                            {
+                                arrayColumnas = columnasEnTabla.ToArray(); //Seleccionar todas las columnas
+                            }
+                            else
+                            {
+                                //Separar nommbre de columnas por coma
+                                arrayColumnas = sentences[1].Split(',');
+                                //Corregir saltos de linea
+                                arrayColumnas = corregirArreglo(arrayColumnas);
+
+
+                                for (int i = 0; i < arrayColumnas.Length; i++)
+                                {
+                                    //Verificar que la tabla contenga las columnas
+                                    if (!columnasEnTabla.Contains(arrayColumnas[i]))
+                                    {
+                                        //Mensaje de error
+                                        //La tabla no contiene una de las columnas descritas 
+
+                                        microSQL.InterpreteSQL.error("La tabla no contiene una de las columnas descritas");
+
+                                        error = true;
+                                        break;
+                                    }
+                                }
+
+                                //Verificar llave de la tabla
+                                if (sentences[5] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                                {
+                                    microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                                    error = true;
+                                }
+                            }
+
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo seleccionar en tabla.
+
+                                if (sentences[6] == "=")
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], false);
+                                }
+                                else if (sentences[6] == "LIKE")
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], true);
+                                }
+                                else
+                                {
+                                    //Error
+                                    microSQL.InterpreteSQL.error("Syntax Error");
+                                }    
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
                 }
 
                 else
@@ -969,7 +1057,161 @@ namespace microSQL
 
         }
 
-        public static void eliminarFilas(string texto) { } //To Do...
+        public static void eliminarFilas(string texto)
+        {
+            /*Ejemplo Instrucciones:
+             1.
+                DELETE FROM
+                <NOMBRE DE LA TABLA>
+             2.
+                DELETE FROM
+                <NOMBRE DE LA TABLA>
+                WHERE
+                ID = <VALOR A BUSCAR>
+             */
+
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            bool error = false;
+
+            //Variables
+            string nombreTabla = "";
+            string buscar = "";
+
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["DELETE"]) && texto.Contains(palabrasReservadas["FROM"]))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones 
+
+                texto = modificarCadenaParaBusquedas(texto);
+
+                string[] sentences = separarStringConAlgoEncerrado(texto, ' ', '#');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 7 posiciones....
+                // [0]'DELETE' [1] 'FROM' [2] tabla [3]'WHERE' [4]<columna> [5] = / 'LIKE' [6] <valor>
+
+
+                //Verificar formato correcto de instrucciones y definir tipo de busqueeda
+
+                //Se busca eliminar todas las filas
+                if (sentences.Length == 3)
+                {
+                    //         Δ FROM
+                    
+                    if (sentences[0] != "α" || sentences[1] != "Δ") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[2];
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+                            
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo eliminar en tabla.
+
+                                Controllers.HomeController.tablas[posicionTabla].eliminarTodasLasFilas();
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
+                }
+
+                //Se busca una fila usando el comando 'LIKE' o con =
+                else if (sentences.Length == 7)
+                {
+                    //         Δ FROM
+                    //         | WHERE
+                    //         % LIKE
+
+                    if (sentences[0] != "α" || sentences[1] != "Δ") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = sentences[2];
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+                            //Verificar llave de la tabla
+                            if (sentences[4] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                            {
+                                microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                                error = true;
+                            }
+
+
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo seleccionar en tabla.
+
+                                if (sentences[5] == "=")
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].eliminarFila(sentences[6], false);
+                                }
+                                else if (sentences[5] == "LIKE")
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].eliminarFila(sentences[6], true);
+                                }
+                                else
+                                {
+                                    //Error
+                                    microSQL.InterpreteSQL.error("Syntax Error");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
+                }
+
+                else
+                {
+                    //Error... instrucciones incorrrectas
+                    microSQL.InterpreteSQL.error("Syntax Error");
+                }
+            }
+            else
+            {
+                //Error  formato incorrecto
+                microSQL.InterpreteSQL.error("Syntax Error");
+            }
+            
+        }
 
         //Extra...
         public static void actualizarDatos(string texto) { } //To Do...
