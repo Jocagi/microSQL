@@ -1007,27 +1007,30 @@ namespace microSQL
                                     }
                                 }
 
+                                
                                 //Verificar llave de la tabla
-                                if (sentences[5] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
-                                {
-                                    microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
-                                    error = true;
-                                }
+                                //if (sentences[5] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                                //{
+                                //    microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                                //    error = true;
+                                //}
                             }
 
                             //Verificar si no hubo un error en el proceso
                             if (error != true)
                             {
+                                string columnaDeBusqueda = sentences[5];
+
                                 //---------------------------------------------------------------------------------------
                                 //Instancia al metodo seleccionar en tabla.
 
                                 if (sentences[6] == "=")
                                 {
-                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], false);
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], false, columnaDeBusqueda);
                                 }
-                                else if (sentences[6] == "LIKE")
+                                else if (sentences[6] == "%")
                                 {
-                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], true);
+                                    Controllers.HomeController.tablas[posicionTabla].seleccionarDatos(arrayColumnas, sentences[7], true, columnaDeBusqueda);
                                 }
                                 else
                                 {
@@ -1164,33 +1167,15 @@ namespace microSQL
 
                         if (posicionTabla > -1)
                         {
-                            //Verificar llave de la tabla
-                            if (sentences[4] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
-                            {
-                                microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
-                                error = true;
-                            }
-
-
+                            
                             //Verificar si no hubo un error en el proceso
                             if (error != true)
                             {
                                 //---------------------------------------------------------------------------------------
                                 //Instancia al metodo seleccionar en tabla.
 
-                                if (sentences[5] == "=")
-                                {
-                                    Controllers.HomeController.tablas[posicionTabla].eliminarFila(sentences[6], false);
-                                }
-                                else if (sentences[5] == "LIKE")
-                                {
-                                    Controllers.HomeController.tablas[posicionTabla].eliminarFila(sentences[6], true);
-                                }
-                                else
-                                {
-                                    //Error
-                                    microSQL.InterpreteSQL.error("Syntax Error");
-                                }
+                                Controllers.HomeController.tablas[posicionTabla].eliminarFila(sentences[6], sentences[4]);
+                                
                             }
                         }
                         else
@@ -1235,8 +1220,7 @@ namespace microSQL
 
             //Variables
             string nombreTabla = "";
-            string buscar = "";
-
+            
             //Comienza Procedimiento........................
 
             //Buscar si el texto posee los comandos correctos
@@ -1291,12 +1275,12 @@ namespace microSQL
                             string busqueda = sentences[9];
 
                             //Verificar llave de la tabla
-                            if (sentences[7] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
-                            {
-                                microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
-                                error = true;
-                            }
-                            //verificar nombre de la columna
+                            //if (sentences[7] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                            //{
+                            //    microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                            //    error = true;
+                            //}
+                            ////verificar nombre de la columna
                             if (!Controllers.HomeController.tablas[posicionTabla].columnas.Contains(nombreColumna))
                             {
                                 microSQL.InterpreteSQL.error("La columna no existe");
@@ -1311,7 +1295,7 @@ namespace microSQL
 
                                 if (sentences[4] == "=" && sentences[8] == "=") //Verificar formato
                                 {
-                                    Controllers.HomeController.tablas[posicionTabla].actualizarDatos(nombreColumna, busqueda, nuevoValor);
+                                    Controllers.HomeController.tablas[posicionTabla].actualizarDatos(nombreColumna, busqueda, nuevoValor, sentences[7]);
                                 }
                                 else
                                 {
