@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Mvc;
 using microSQL.Models;
 
+using ArbolB_;
+
 namespace microSQL.Controllers
 {
     public class HomeController : Controller
@@ -46,5 +48,23 @@ namespace microSQL.Controllers
             return View();
         }
 
+        public ActionResult exportarJSON()
+        {
+
+            if (tablaActual.nombreTabla != null && tablaActual.nombreTabla != "" && tablaActual.nombreTabla != "TablaNueva")
+            {
+                Tabla exportar = tablas.Find(x => x.nombreTabla == tablaActual.nombreTabla);
+
+                ArbolBM arbol = exportar.arbol;
+
+                string[] columnas = exportar.columnas.ToArray();
+                Objeto[] objetos = arbol.ArbolALista();
+
+                exportar.exportarJSON()
+            }
+
+
+            return RedirectToAction("Index");
+        }
     }
 }

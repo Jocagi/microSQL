@@ -736,7 +736,70 @@ namespace microSQL
         }
 
         //Extra
-        public void exportarJSON() { } 
+        public void exportarJSON()
+        {
 
+        }
+        public void GuardarJson(Objeto[] A, string[] B)
+        {
+            /*
+              A = ARBOL
+              B = COLUMNAS
+             * */
+
+            string Nombre = this.nombreTabla;
+
+            string path;
+            path = @"C:\Tablas\" + Nombre + ".txt";
+            string root = @"C:\Tablas";
+
+            if (!Directory.Exists(root))
+            {
+                Directory.CreateDirectory(root);
+            }
+
+            if (!System.IO.File.Exists(path))
+            {
+                using (FileStream strm = System.IO.File.Create(path))
+                using (StreamWriter sw = new StreamWriter(strm))
+                {
+                    sw.WriteLine("[");
+                    string m = "No info";
+                    sw.WriteLine(m);
+                    sw.Close();
+                }
+            }
+            if (System.IO.File.Exists(path))
+            {
+                using (StreamWriter sw = System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine("[");
+                    for (int i = 0; i < A.Length; i++)
+                    {
+                        string m;
+                        m = "{";
+                        for (int j = 0; j < B.Length; j++)
+                        {
+
+                            m += ("\u0022" + B[j] + "\u0022" + ":" + "\u0022" + A[i].elementos[j] + "\u0022");
+                            if (j != B.Length - 1)
+                            {
+                                m += ",";
+                            }
+                        }
+                        m += "}";
+                        if (i != A.Length - 1)
+                        {
+                            m += ",";
+                        }
+                        m += "\n";
+                        sw.WriteLine(m);
+                    }
+                    sw.WriteLine("]");
+                    sw.Close();
+                }
+            }
+
+        }
     }
 }
