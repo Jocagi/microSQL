@@ -217,6 +217,7 @@ namespace microSQL
                                 α          DROP TABLE
                                 α          UPDATE
 
+                                Δ          SET
                                 Δ          FROM
                                 |          WHERE
 
@@ -240,6 +241,7 @@ namespace microSQL
             texto = texto.Replace(palabrasReservadas["DROP TABLE"], "α");
             texto = texto.Replace(palabrasReservadas["UPDATE"], "α");
             texto = texto.Replace(palabrasReservadas["FROM"], "Δ");
+            texto = texto.Replace("SET", "Δ");
             texto = texto.Replace(palabrasReservadas["WHERE"], "|");
             texto = texto.Replace(palabrasReservadas["VALUES"], "~");
             texto = texto.Replace("LIKE", "%");
@@ -1214,7 +1216,131 @@ namespace microSQL
         }
 
         //Extra...
-        public static void actualizarDatos(string texto) { } //To Do...
+        public static void actualizarDatos(string texto)
+        {
+
+            /*Ejemplo Instrucciones:
+          
+            UPDATE
+            < nombre de la tabla>
+            SET
+            < nombre de la columna > = < valor >
+            WHERE
+            ID = < valor >
+          */
+
+
+            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
+            bool error = false;
+
+            //Variables
+            string nombreTabla = "";
+            string buscar = "";
+
+            //Comienza Procedimiento........................
+
+            //Buscar si el texto posee los comandos correctos
+            if (texto.Contains(palabrasReservadas["UPDATE"]) && texto.Contains("SET"))
+            {
+                //Reemplazar palabras reservadas por caracteres simples
+                texto = sustituirPalabrasReservadasPorCaracteres(texto);
+
+                //Se separa todas las instrucciones 
+
+                texto = modificarCadenaParaBusquedas(texto);
+
+                string[] sentences = separarStringConAlgoEncerrado(texto, ' ', '#');
+
+                sentences = eliminarPosicionesVacias(sentences);
+
+                //El resutado deberia ser un array con 7 posiciones....
+                // [0]'UPDATE' [1] tabla [2] 'SET' [3]<columna> [4] ) [5] <valor> [6] 'WHERE' [7] ID  [8] = [9] valor 
+
+
+                //Verificar formato correcto de instrucciones y definir tipo de busqueeda
+                
+                //Se busca una fila usando el comando 'LIKE' o con =
+                if (sentences.Length == 10)
+                {
+                    //         Δ SET
+                    //         | WHERE
+                    //         % LIKE
+
+                    if (sentences[0] != "α" || sentences[2] != "Δ" || sentences[6] != "|") //Buscar errores
+                    {
+                        //Error... instrucciones incorrrectas
+                        microSQL.InterpreteSQL.error("Syntax Error");
+                    }
+                    else
+                    {
+                        //Definir nombre tabla
+                        nombreTabla = eliminarEspacios(sentences[1]);
+
+                        //Verificar que exista la tabla
+
+                        int posicionTabla = Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombreTabla);
+
+                        if (posicionTabla > -1)
+                        {
+
+                            //El resutado deberia ser un array con 7 posiciones....
+                            // [0]'UPDATE' [1] tabla [2] 'SET' [3]<columna> [4] = [5] <valor> [6] 'WHERE' [7] ID  [8] = [9] valor 
+
+                            string nombreColumna = sentences[3];
+                            string nuevoValor = sentences[5];
+                            string busqueda = sentences[9];
+
+                            //Verificar llave de la tabla
+                            if (sentences[7] != Controllers.HomeController.tablas[posicionTabla].columnaLlave)
+                            {
+                                microSQL.InterpreteSQL.error("Llave de busqueda incorrecta");
+                                error = true;
+                            }
+                            //verificar nombre de la columna
+                            if (!Controllers.HomeController.tablas[posicionTabla].columnas.Contains(nombreColumna))
+                            {
+                                microSQL.InterpreteSQL.error("La columna no existe");
+                                error = true;
+                            }
+
+                            //Verificar si no hubo un error en el proceso
+                            if (error != true)
+                            {
+                                //---------------------------------------------------------------------------------------
+                                //Instancia al metodo insertar en tabla.
+
+                                if (sentences[4] == "=" && sentences[8] == "=") //Verificar formato
+                                {
+                                    Controllers.HomeController.tablas[posicionTabla].actualizarDatos(nombreColumna, busqueda, nuevoValor);
+                                }
+                                else
+                                {
+                                    //Error
+                                    microSQL.InterpreteSQL.error("Syntax Error");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //Error No existe la tabla
+                            microSQL.InterpreteSQL.error("No existe la tabla");
+                        }
+                    }
+                }
+
+                else
+                {
+                    //Error... instrucciones incorrrectas
+                    microSQL.InterpreteSQL.error("Syntax Error");
+                }
+            }
+            else
+            {
+                //Error  formato incorrecto
+                microSQL.InterpreteSQL.error("Syntax Error");
+            }
+
+        } 
 
     }
 }

@@ -243,55 +243,160 @@ namespace microSQL
         //---------------------------------------------------------
         public void crearTabla(string nombre, string llave, List<string> col, List<string> datos)
         {
+            if (microSQL.Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombre) > -1) //Solo pasa si la tabla no existe
+            {
+                microSQL.InterpreteSQL.error("La tabla ya existe");
+            }
+            else //La tabla no existe
+            {
+                if (tiposDeDatosCorrectos(datos))
+                {
+                    //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
+                    //Se define las propiedades de esta tabla y se crean sus archivos
 
-            //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
-            //Se define las propiedades de esta tabla y se crean sus archivos
+                    string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
 
-            string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+                    string rutaColumnas = rutaFolder + "/tablas/" + nombre + ".tabla";
+                    string rutaFilas = rutaFolder + "/arbolesb/" + nombre + ".arbolb";
 
-            string rutaColumnas = rutaFolder + "/tablas/" + nombre + ".tabla";
-            string rutaFilas = rutaFolder + "/arbolesb/" + nombre + ".arbolb";
+                    //definir propiedades
+                    this.nombreTabla = nombre;
+                    this.columnas = col;
+                    this.columnaLlave = llave;
+                    this.tiposDeDatos = datos;
 
-            //definir propiedades
-            this.nombreTabla = nombre;
-            this.columnas = col;
-            this.columnaLlave = llave;
-            this.tiposDeDatos = datos;
+                    //crear archivos
 
-            //crear archivos
+                    crearArchivo(rutaFilas);
+                    crearArchivo(rutaColumnas);
 
-            crearArchivo(rutaFilas);
-            crearArchivo(rutaColumnas);
+                    //Definir nombre de columna y tipo de dato en el archivo .tabla
+                    escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
+                    escribirEnArchivo(this.columnas, rutaColumnas);
+                    escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
 
-            //Definir nombre de columna y tipo de dato en el archivo .tabla
-            escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
-            escribirEnArchivo(this.columnas, rutaColumnas);
-            escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
-
-            //Mostrar en pantalla la nueva tabla
-            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
+                    //Mostrar en pantalla la nueva tabla
+                    microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
+                }
+                else
+                {
+                    microSQL.InterpreteSQL.error("Tipo de dato No valido");
+                }
+            }
         }
 
-        private bool verificarTiposDeDatos(List<string> tiposDeDatos, List<string> columnas)
+        private bool tiposDeDatosCorrectos(List<string> tiposDeDatos)
         {
-            //Verificar que cada columna corresponda asu tipo de dato
+            //Verificar nombre correcto de cada tipo de dato ingresado en crear
+            bool resultado = true;
 
-            return true;
-        } //To Do...
+            foreach (var item in tiposDeDatos)
+            {
+                if (item != "INT" && item != "VARCHAR(100)" && item != "DATETIME")
+                {
+                    resultado = false;
+                }
+            }
+
+            return resultado;
+        } 
+
+        private bool errorEnTipoDeDato(string dato, string valor)
+        {
+            //Verifica que un valor ingresado sea del tipo de dato correcto
+
+            bool error = false;
+
+            switch (dato)
+            {
+                case "INT":
+
+                    foreach (char item in valor) //Verificar cada caracter de la cadena
+                    {
+                        if (!Char.IsNumber(item)) //No es un numero
+                        {
+                            error = true;
+                            break;
+                        }
+                    }
+
+                    break;
+                case "VARCHAR(100)":
+                    break;
+                case "DATETIME":
+
+                    int cantidadDeDiagonales = 0;
+
+                    foreach (char item in valor) //Verificar cada caracter de la cadena
+                    {
+                        if (!Char.IsNumber(item)) // No es un numero
+                        {
+                            if (item != '/') // No es una diagonal
+                            {
+                                error = true;
+                                break;
+                            }
+                            else
+                            {
+                                cantidadDeDiagonales++;
+                            }
+                        }
+                    }
+
+                    if (cantidadDeDiagonales != 2) //Verificar que solo existan dos diagonales
+                    {
+                        error = true;
+                        break;
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+
+            return error;
+
+        }
+
+        private bool verificarErroresDeTiposDeDatoEnArray(string[] array)
+        {
+            //Verifica que cada elemento en un array insertado tenga el tipo de dato correcto
+
+            bool error = false;
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (errorEnTipoDeDato(this.tiposDeDatos[i], array[i]) == true)
+                {
+                    error = true;
+                    break;
+                }
+            }
+
+            return error;
+        }
 
         public void insertarDatos(string[] valores)
         {
-            string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
-            string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
+            if (verificarErroresDeTiposDeDatoEnArray(valores) == false)
+            {
+                string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+                string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
 
-            //Anadir filas a archivo
+                //Anadir filas a archivo
 
-            escribirEnArchivo(valores.ToList(), rutaFilas);
+                escribirEnArchivo(valores.ToList(), rutaFilas);
 
-            //Mostrar en pantalla la incersion
+                //Mostrar en pantalla la insercion
 
-            this.filas.Add(valores);
-            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, this.filas);
+                this.filas.Add(valores);
+                microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, this.filas);
+
+            }
+            else
+            {
+                microSQL.InterpreteSQL.error("Error en el tipo de dato");     
+            }
         }
 
         public void seleccionarDatos(string[] columnas)
@@ -498,10 +603,77 @@ namespace microSQL
                 System.IO.File.Delete(path1);
                 System.IO.File.Delete(path2);
             }
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista("Tabla Borrada", null, null);
+
         }
 
         //Extra... 
-        public void actualizarDatos(string columna, string valorAntiguo, string nuevoValor) { } //To Do...
+        public void actualizarDatos(string columna, string id, string nuevoValor)
+        {
+
+            nuevoValor = nuevoValor.Replace("'", "");
+
+            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
+            int indexColumna = this.columnas.FindIndex(x => x == columna);
+
+            //Verificar que exitan las columnnas
+            if (indexColumna > -1 && indexLlave > -1)
+            {
+
+                //To Do...  Arreglar Busqueda en arbol B
+
+                //Realizar busqueda
+
+
+                foreach (var arreglo in filas)
+                {
+                    try
+                    {
+
+                        //Verificar si coincide con la busqueda '='
+                        if (arreglo[indexLlave] == id)
+                        {
+                            //actualizar fila
+
+                            //Encuentra la posicion actual del arreglo en la lista y en ese arreglo busca la posicion del elemento a cambiar.
+
+                            int indexArreglo = this.filas.IndexOf(arreglo); //Obtener posicion actual de la fila
+
+
+                            if (errorEnTipoDeDato(this.tiposDeDatos[indexColumna], nuevoValor) == false)//verificar tipo de dato de valor a modificar
+                            {
+
+                                this.filas[indexArreglo][indexColumna] = nuevoValor; //Actualizar valor
+
+                            }
+                            else
+                            {
+                                microSQL.InterpreteSQL.error("Error en tipo de dato");
+                            }
+
+                            break;
+                        }
+
+                    }
+                    catch (Exception)
+                    {
+                        microSQL.InterpreteSQL.error("Error desconocido");
+                        throw;
+                    }
+
+                }
+            }
+            else
+            {
+                microSQL.InterpreteSQL.error("No existe la columna");
+            }
+
+            //Mostrar en pantalla resultado
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), filas);
+
+        }
 
         //Extra
         public void exportarJSON() { } //To Do...
