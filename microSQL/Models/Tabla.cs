@@ -6,21 +6,25 @@ using System.Web;
 using System.IO;
 using System.Text;
 
+using ArbolB_; //DLL del arbol B
+
 namespace microSQL
 {
     public class Tabla
     {
+       
         public string nombreTabla { get; set; }
 
         public List<string> tiposDeDatos { get; set; }
         public List<string> columnas { get; set; }
 
         public string columnaLlave { get; set; } //nombre de llave primaria en 'columnas'
-        public List<string[]> filas = new List<string[]>(); //To Do... Cambiar lista por arbol B
-
+        private int indexLlave { get; set; } 
+        
+        public ArbolBM arbol { get; set; }
 
         //Constructor
-        public Tabla() { }
+        public Tabla() {}
         private Tabla(string nombre, List<string> tiposDeDatos, List<string> nombresColumnas, string llaveColumna)
         {
             this.nombreTabla = nombre;
@@ -28,17 +32,15 @@ namespace microSQL
             this.columnas = nombresColumnas;
             this.columnaLlave = llaveColumna;
         }
-        private Tabla(string nombre, List<string> tiposDeDatos, List<string> nombresColumnas, string llaveColumna, List<string[]> filas)
+        private Tabla(string nombre, List<string> tiposDeDatos, List<string> nombresColumnas, int llaveColumna, ArbolBM filas)
         {
             this.nombreTabla = nombre;
             this.tiposDeDatos = tiposDeDatos;
             this.columnas = nombresColumnas;
-            this.columnaLlave = llaveColumna;
-            this.filas = filas;
+            this.indexLlave = llaveColumna;
+            this.arbol = filas;
         }
-        //To Do... Hacer sobrecarga a constructor que incluya al arbol B
-
-        //Archivos de tablas
+        
         public static void leerAchivoTablas()
         {
             //Eliminar tablas en controlador
@@ -61,14 +63,28 @@ namespace microSQL
                 List<string> columnas = new List<string>();
                 List<string[]> filas = new List<string[]>();
                 string llave = "";
+                int indexLlave = 0;
 
                 nombreTabla = archivo.Name.Replace(".tabla", "");
 
                 leerArchivoConfiguracionTabla(carpetaTabla + "/" + nombreTabla + ".tabla", ref datos, ref columnas, ref llave);
                 leerArchivoArbolB(carpetaArbolB + "/" + nombreTabla + ".arbolb", ref filas);
 
+                //Agregar filas al Arbol B+
+                indexLlave = columnas.FindIndex(x => x == llave);
+                ArbolBM arbol = new ArbolBM(columnas.ToArray());
+                Objeto obj = new Objeto(columnas.Count, indexLlave);
+                
+                if (filas.Count > 0)
+                {
+                    //Objeto[] objetos = arbol.ArbolALista();
+                    agregarFilasAlArbol(obj, filas, indexLlave, ref arbol);
+
+                }
+
                 //Agregar tabla a lista
-                Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, llave, filas));
+                //Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, llave, filas)); //To Do... Borrar
+                Controllers.HomeController.tablas.Add(new Tabla(nombreTabla, datos, columnas, indexLlave, arbol)); 
             }
         }
 
@@ -115,8 +131,7 @@ namespace microSQL
         }
         private static void leerArchivoArbolB(string path, ref List<string[]> filas)
         {
-            //To Do... Modificar para Arbol B
-
+            
             if (!String.IsNullOrEmpty(path))
             {
                 if (File.Exists(path))
@@ -130,7 +145,9 @@ namespace microSQL
                             
                             string[] palabras = line.Split(','); //dividir datos seprados por coma
 
-                            filas.Add(palabras); //Anadir arreglo de filas
+                            filas.Add(palabras); 
+                            //Anadir arreglo de filas
+                            
                         }
                     }
                 }
@@ -148,8 +165,9 @@ namespace microSQL
 
             if (System.IO.File.Exists(path))
             {
-                //To Do...
                 //Mensaje de error
+                microSQL.InterpreteSQL.error("Ya existe el archivo");
+
             }
             else
             {
@@ -239,52 +257,6 @@ namespace microSQL
             }
         }
 
-        //Metodos derivados de instrucciones SQL
-        //---------------------------------------------------------
-        public void crearTabla(string nombre, string llave, List<string> col, List<string> datos)
-        {
-            if (microSQL.Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombre) > -1) //Solo pasa si la tabla no existe
-            {
-                microSQL.InterpreteSQL.error("La tabla ya existe");
-            }
-            else //La tabla no existe
-            {
-                if (tiposDeDatosCorrectos(datos))
-                {
-                    //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
-                    //Se define las propiedades de esta tabla y se crean sus archivos
-
-                    string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
-
-                    string rutaColumnas = rutaFolder + "/tablas/" + nombre + ".tabla";
-                    string rutaFilas = rutaFolder + "/arbolesb/" + nombre + ".arbolb";
-
-                    //definir propiedades
-                    this.nombreTabla = nombre;
-                    this.columnas = col;
-                    this.columnaLlave = llave;
-                    this.tiposDeDatos = datos;
-
-                    //crear archivos
-
-                    crearArchivo(rutaFilas);
-                    crearArchivo(rutaColumnas);
-
-                    //Definir nombre de columna y tipo de dato en el archivo .tabla
-                    escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
-                    escribirEnArchivo(this.columnas, rutaColumnas);
-                    escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
-
-                    //Mostrar en pantalla la nueva tabla
-                    microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
-                }
-                else
-                {
-                    microSQL.InterpreteSQL.error("Tipo de dato No valido");
-                }
-            }
-        }
-
         private bool tiposDeDatosCorrectos(List<string> tiposDeDatos)
         {
             //Verificar nombre correcto de cada tipo de dato ingresado en crear
@@ -299,7 +271,7 @@ namespace microSQL
             }
 
             return resultado;
-        } 
+        }
 
         private bool errorEnTipoDeDato(string dato, string valor)
         {
@@ -376,22 +348,132 @@ namespace microSQL
             return error;
         }
 
+        private bool esNumero(string cadena)
+        {
+            bool error = false;
+            foreach (char item in cadena) //Verificar cada caracter de la cadena
+            {
+                if (!Char.IsNumber(item)) //No es un numero
+                {
+                    error = true;
+                    break;
+                }
+            }
+            return !error;
+        }
+
+        private static void agregarFilasAlArbol(Objeto config, List<string[]> filas, int indexLlave, ref ArbolBM arbol)
+        {
+            try
+            {
+                foreach (var array in filas)
+                {
+                    config.elementos = array;
+                    config.id = Convert.ToInt32(array[indexLlave]);
+                    arbol.insertar(config);
+
+                    config = new Objeto(array.Length, indexLlave);
+                }
+            }
+            catch (Exception)
+            {
+                microSQL.InterpreteSQL.error("Error al agregar");
+                throw;
+            }
+        }
+
+        //Metodos derivados de instrucciones SQL
+        //---------------------------------------------------------
+        public void crearTabla(string nombre, string llave, List<string> col, List<string> datos)
+        {
+            if (microSQL.Controllers.HomeController.tablas.FindIndex(x => x.nombreTabla == nombre) > -1) //Solo pasa si la tabla no existe
+            {
+                microSQL.InterpreteSQL.error("La tabla ya existe");
+            }
+            else //La tabla no existe
+            {
+                if (tiposDeDatosCorrectos(datos))
+                {
+                    if (esNumero(llave))
+                    {
+
+                        //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
+                        //Se define las propiedades de esta tabla y se crean sus archivos
+
+                        string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+
+                        string rutaColumnas = rutaFolder + "/tablas/" + nombre + ".tabla";
+                        string rutaFilas = rutaFolder + "/arbolesb/" + nombre + ".arbolb";
+
+                        //definir propiedades
+                        this.nombreTabla = nombre;
+                        this.columnas = col;
+                        this.columnaLlave = llave;
+                        this.tiposDeDatos = datos;
+
+                        //crear archivos
+
+                        crearArchivo(rutaFilas);
+                        crearArchivo(rutaColumnas);
+
+                        //Definir nombre de columna y tipo de dato en el archivo .tabla
+                        escribirEnArchivo(this.tiposDeDatos, rutaColumnas);
+                        escribirEnArchivo(this.columnas, rutaColumnas);
+                        escribirEnArchivo(new List<string> { this.columnaLlave }, rutaColumnas);
+
+                        //Mostrar en pantalla la nueva tabla
+                        microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), null);
+
+                    }
+                    else
+                    {
+                        microSQL.InterpreteSQL.error("La llave debe ser de tipo INT");
+                    }
+                }
+                else
+                {
+                    microSQL.InterpreteSQL.error("Tipo de dato No valido");
+                }
+            }
+        }
+
         public void insertarDatos(string[] valores)
         {
             if (verificarErroresDeTiposDeDatoEnArray(valores) == false)
             {
-                string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
-                string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
+                if (esNumero(valores[indexLlave]))
+                {
 
-                //Anadir filas a archivo
+                    string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+                    string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
 
-                escribirEnArchivo(valores.ToList(), rutaFilas);
+                    //Anadir filas a archivo
 
-                //Mostrar en pantalla la insercion
+                    escribirEnArchivo(valores.ToList(), rutaFilas);
 
-                this.filas.Add(valores);
-                microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, this.filas);
+                    //Mostrar en pantalla la insercion
+                    Objeto nuevo = new Objeto(columnas.Count, indexLlave);
+                    nuevo.id = Convert.ToInt16(valores[indexLlave]);
+                    nuevo.elementos = valores;
 
+                    this.arbol.insertar(nuevo);
+
+                    List<string[]> filas = new List<string[]>();
+
+                    //Mostrar en pantalla resultado
+                    Objeto[] objetos = arbol.ArbolALista();
+                    foreach (var item in objetos)
+                    {
+                        filas.Add(item.elementos);
+                    }
+
+
+                    microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+                }
+                else
+                {
+                    microSQL.InterpreteSQL.error("La llave debe ser de tipo INT");
+                }
             }
             else
             {
@@ -422,10 +504,14 @@ namespace microSQL
             //Ordenar indices
             indexColumnas.Sort();
 
-            //To Do...  Busqueda en arbol B
+            //Busqueda en arbol B
 
-            foreach (var arreglo in filas)
+            Objeto[] filas = this.arbol.ArbolALista();
+
+            foreach (var objeto in filas)
             {
+                string[] arreglo = objeto.elementos;
+
                 for (int i = 0; i < arreglo.Length; i++)
                 {
                     if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
@@ -444,7 +530,7 @@ namespace microSQL
             microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), filasSeleccionadas);
         }
 
-        public void seleccionarDatos(string[] columnas, string buscar, bool like)
+        public void seleccionarDatos(string[] columnas, string buscar, bool like, string ColumnaDeBusqueda)
         {
 
             //Se selcceccionan ciertas filas, y solo ciertas columnas
@@ -470,39 +556,39 @@ namespace microSQL
 
             //Ordenar indices
             indexColumnas.Sort();
-
-
-            //To Do...  Arreglar Busqueda en arbol B
-
-
+            
             //Realizar busqueda
             if (like == false) // Se realiza una busqueda con operador =
             {
-                foreach (var arreglo in filas)
+                Objeto objeto = this.arbol.Buscar(ColumnaDeBusqueda, buscar);
+                string[] arreglo = objeto.elementos;
+
+
+                for (int i = 0; i < arreglo.Length; i++)
                 {
-                    for (int i = 0; i < arreglo.Length; i++)
+                    if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
                     {
-                        if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
-                        {
-                            fila.Add(arreglo[i]);
-                        }
+                        fila.Add(arreglo[i]);
                     }
-
-                    //Verificar si coincide con la busqueda '='
-                    if (fila[indexLlave] == buscar)
-                    {
-                        //Agregar fila actual a las filas seleccionadas
-                        filasSeleccionadas.Add(fila.ToArray());
-
-                    }
-
-                    fila.Clear();
                 }
+                    //Agregar fila actual a las filas seleccionadas
+                    filasSeleccionadas.Add(fila.ToArray());
+                
+                fila.Clear();
+
             }
             else // Se realiza una busqueda con operador LIKE
             {
-                foreach (var arreglo in filas)
+
+                buscar = buscar.Replace("%", "");
+                buscar = buscar.Replace("‘", "");
+
+                Objeto[] objetos = arbol.ValoresX(ColumnaDeBusqueda, buscar);
+
+                foreach (var obj in objetos)
                 {
+                    string[] arreglo = obj.elementos;
+
                     for (int i = 0; i < arreglo.Length; i++)
                     {
                         if (indexColumnas.Contains(i)) //Si es una de las columnas seleccionadas
@@ -512,15 +598,10 @@ namespace microSQL
                     }
 
                     //Verificar si coincide con la busqueda 'LIKE'
-                    buscar = buscar.Replace("%", "");
-
-                    if (fila[indexLlave].StartsWith(buscar)) //To Do... Corregir para hacer busquedas correctamente, solo busca si contiene 'm'
-                    {
+                    
                         //Agregar fila actual a las filas seleccionadas
                         filasSeleccionadas.Add(fila.ToArray());
-
-                    }
-
+                
                     fila.Clear();
                 }
             }
@@ -531,62 +612,53 @@ namespace microSQL
             
         }
 
-        public void eliminarFila(string buscar, bool like)
+        public void eliminarFila(string buscar, string columna)
         {
-            //Si se busca un valor igual like sera falso
-            //Si se busca un valor del tipo %m, like sera true
-
-            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
-
-
-            //To Do...  Arreglar Busqueda en arbol B
             
-            //Realizar busqueda
-            
+            try
+            {
+
+                Objeto[] objetos = this.arbol.Eliminar(columna, buscar);
+                List<string[]> filas = new List<string[]>();
+                foreach (var item in objetos)
+                {
+                    filas.Add(item.elementos);
+                }
+
+                string rutaFolder = System.Web.HttpContext.Current.Server.MapPath("~/microSQL");
+                string rutaFilas = rutaFolder + "/arbolesb/" + this.nombreTabla + ".arbolb";
+
+                //Anadir filas a archivo
+
+                //Crear archivo en blanco
+                FileStream file = System.IO.File.Create(rutaFilas);
+                file.Close();
+
                 foreach (var arreglo in filas)
                 {
-                    try
-                    {
-
-                    //Verificar si coincide con la busqueda '='
-                    if (arreglo[indexLlave] == buscar && like == false)
-                    {
-                        //eliminar fila
-                        this.filas.Remove(arreglo);
-                    }
-
-                    //Verificar si coincide con la busqueda 'LIKE'
-                    if (like == true)
-                    {
-                        buscar = buscar.Replace("%", "");
-
-                        if (arreglo[indexLlave].StartsWith(buscar))
-                        {
-                            //eliminar fila
-                            this.filas.Remove(arreglo);
-                        }
-                    }
+                    escribirEnArchivo(arreglo.ToList(), rutaFilas);
                 }
-                catch (Exception)
-                    {
-                        microSQL.InterpreteSQL.error("Error desconocido");
-                        throw;
-                    }
-                    
-                }
-            
 
-            //Mostrar en pantalla resultado
-            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+                //Mostrar en pantalla la insercion
+                
+                microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+                
+
+            }
+            catch (Exception)
+            {
+                microSQL.InterpreteSQL.error("Error desconocido");
+                throw;
+            }
 
         }
 
         public void eliminarTodasLasFilas()
         {
-            this.filas.Clear(); //Eliminar todo
+            this.arbol = new ArbolBM(null); //Eliminar todo
 
             //Mostrar en pantalla resultado
-            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, null);
 
         }
 
@@ -610,52 +682,33 @@ namespace microSQL
         }
 
         //Extra... 
-        public void actualizarDatos(string columna, string id, string nuevoValor)
+        public void actualizarDatos(string columna, string id, string nuevoValor, string columnaID)
         {
 
             nuevoValor = nuevoValor.Replace("'", "");
 
-            int indexLlave = this.columnas.FindIndex(x => x == columnaLlave);
+            int indexLlave = this.columnas.FindIndex(x => x == columnaID);
             int indexColumna = this.columnas.FindIndex(x => x == columna);
 
             //Verificar que exitan las columnnas
             if (indexColumna > -1 && indexLlave > -1)
             {
-
-                //To Do...  Arreglar Busqueda en arbol B
-
                 //Realizar busqueda
-
-
-                foreach (var arreglo in filas)
-                {
                     try
                     {
-
-                        //Verificar si coincide con la busqueda '='
-                        if (arreglo[indexLlave] == id)
-                        {
                             //actualizar fila
-
                             //Encuentra la posicion actual del arreglo en la lista y en ese arreglo busca la posicion del elemento a cambiar.
-
-                            int indexArreglo = this.filas.IndexOf(arreglo); //Obtener posicion actual de la fila
-
-
+               
                             if (errorEnTipoDeDato(this.tiposDeDatos[indexColumna], nuevoValor) == false)//verificar tipo de dato de valor a modificar
                             {
-
-                                this.filas[indexArreglo][indexColumna] = nuevoValor; //Actualizar valor
-
+                         //this.filas[indexArreglo][indexColumna] = nuevoValor; //Actualizar valor
+                         arbol.Actualizar(columnaID, id, nuevoValor, columna);
                             }
                             else
                             {
                                 microSQL.InterpreteSQL.error("Error en tipo de dato");
                             }
-
-                            break;
-                        }
-
+                            
                     }
                     catch (Exception)
                     {
@@ -663,7 +716,7 @@ namespace microSQL
                         throw;
                     }
 
-                }
+                
             }
             else
             {
@@ -671,12 +724,19 @@ namespace microSQL
             }
 
             //Mostrar en pantalla resultado
-            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, columnas.ToList(), filas);
+            Objeto[] objetos = arbol.ArbolALista();
+            List<string[]> filas = new List<string[]>();
+            foreach (var item in objetos)
+            {
+                filas.Add(item.elementos);
+            }
+
+            microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
 
         }
 
         //Extra
-        public void exportarJSON() { } //To Do...
+        public void exportarJSON() { } 
 
     }
 }
