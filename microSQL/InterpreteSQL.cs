@@ -849,8 +849,7 @@ namespace microSQL
             //Variables
             string nombreTabla = "";
             List<string> columnas = new List<string>();
-            string buscar = "";
-
+            
             //Comienza Procedimiento........................
 
             //Buscar si el texto posee los comandos correctos
@@ -1081,8 +1080,7 @@ namespace microSQL
 
             //Variables
             string nombreTabla = "";
-            string buscar = "";
-
+            
             //Comienza Procedimiento........................
 
             //Buscar si el texto posee los comandos correctos

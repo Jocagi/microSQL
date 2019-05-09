@@ -736,22 +736,18 @@ namespace microSQL
         }
 
         //Extra
-        public void exportarJSON()
-        {
-
-        }
+        
         public void GuardarJson(Objeto[] A, string[] B)
         {
             /*
               A = ARBOL
               B = COLUMNAS
-             * */
+              */
 
             string Nombre = this.nombreTabla;
 
-            string path;
-            path = @"C:\Tablas\" + Nombre + ".txt";
-            string root = @"C:\Tablas";
+            string root = System.Web.HttpContext.Current.Server.MapPath("~/JSON"); ;
+            string path = root + "/" + Nombre + ".json";
 
             if (!Directory.Exists(root))
             {

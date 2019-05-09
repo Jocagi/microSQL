@@ -60,7 +60,7 @@ namespace microSQL.Controllers
                 string[] columnas = exportar.columnas.ToArray();
                 Objeto[] objetos = arbol.ArbolALista();
 
-                exportar.exportarJSON()
+                exportar.GuardarJson(objetos, columnas);
             }
 
 
