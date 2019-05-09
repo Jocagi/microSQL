@@ -158,3 +158,4 @@ C:\Users\user\Documents\GitHub\microSQL\microSQL\obj\Debug\microSQL.csproj.CoreC
 C:\Users\user\Documents\GitHub\microSQL\microSQL\obj\Debug\microSQL.csproj.CopyComplete
 C:\Users\user\Documents\GitHub\microSQL\microSQL\obj\Debug\microSQL.dll
 C:\Users\user\Documents\GitHub\microSQL\microSQL\obj\Debug\microSQL.pdb
+C:\Users\user\Documents\GitHub\microSQL\microSQL\bin\ArbolB+.dll

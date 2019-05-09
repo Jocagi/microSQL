@@ -137,6 +137,15 @@ namespace microSQL
              //lista con valores por en otro idioma
             List<String> Personalizado = new List<string> { SELECT, FROM, DELETE, WHERE, CREATE_TABLE, DROP_TABLE, INSERT_INTO, VALUES, GO, UPDATE };
 
+            //verificar errores
+            for (int i = 0; i < Default.Count; i++)
+            {
+                if (String.IsNullOrEmpty(Personalizado[i]))
+                {
+                    Personalizado[i] = Default[i];
+                }
+            }
+
             construirArchivo(Personalizado);
         }
 
