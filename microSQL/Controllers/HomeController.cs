@@ -47,6 +47,22 @@ namespace microSQL.Controllers
             //To Do... Metodo para regresar el diccionario a sus valores por defecto
             return View();
         }
+        [HttpPost]
+        public ActionResult ConfiguracionDeIdioma(string SELECT, string FROM, string DELETE, string WHERE, string CREATE_TABLE, string DROP_TABLE, string INSERT_INTO, string VALUES, string GO, string UPDATE)
+        {
+
+            //Hacer algo
+
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult ConfiguracionDefault()
+        {
+            //Hacer algo
+
+            return RedirectToAction("Index");
+
+        }
 
         public ActionResult exportarJSON()
         {
