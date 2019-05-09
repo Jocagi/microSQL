@@ -43,22 +43,21 @@ namespace microSQL.Controllers
 
         public ActionResult ConfiguracionDeIdioma()
         {
-            //To Do... Metodo para personalizar diccionario
-            //To Do... Metodo para regresar el diccionario a sus valores por defecto
             return View();
         }
         [HttpPost]
         public ActionResult ConfiguracionDeIdioma(string SELECT, string FROM, string DELETE, string WHERE, string CREATE_TABLE, string DROP_TABLE, string INSERT_INTO, string VALUES, string GO, string UPDATE)
         {
 
-            //Hacer algo
+            Configuracion.crearArchivoConfiguracionPersonalizado(SELECT, FROM, DELETE, WHERE, CREATE_TABLE, DROP_TABLE, INSERT_INTO, VALUES, GO, UPDATE);
 
             return RedirectToAction("Index");
         }
 
         public ActionResult ConfiguracionDefault()
         {
-            //Hacer algo
+
+            Configuracion.crearArchivoConfiguracionDefault();
 
             return RedirectToAction("Index");
 

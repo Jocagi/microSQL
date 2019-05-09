@@ -394,7 +394,7 @@ namespace microSQL
             {
                 if (tiposDeDatosCorrectos(datos))
                 {
-                    if (esNumero(llave))
+                    if (datos[col.FindIndex(x => x == llave)] == "INT")
                     {
 
                         //Este metodo actúa practimente como un construcctor, pero debe hacerse la instancia a esta clase primero
