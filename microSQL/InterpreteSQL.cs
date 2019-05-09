@@ -305,69 +305,7 @@ namespace microSQL
 
             return array;
         }
-
-        private static Dictionary<string, string> diccionarioCaracteres()
-        {
-            //Simplifica palabras reservadas con un simple caracter
-
-            /*
-                                Lista de palabras reservadas:
-
-                                α β θ π Ω μ
-
-                                α          CREATE TABLE
-                                α          INSERT INTO
-                                α          SELECT
-                                α          DELETE
-                                α          DROP TABLE
-                                α          UPDATE
-
-                                Δ          FROM
-                                |          WHERE
-
-                                ~          VALUES
-                                %          LIKE
-                                           GO
-
-                                ρ	       PRIMARY KEY
-                                π          INT
-                                β          VARCHAR(100)
-                                Ω          DATETIME
-
-                            */
-            Dictionary<string, string> palabrasReservadas = obtenerPalabrasReservadas();
-            Dictionary<string, string> diccionario = new Dictionary<string, string>();
-            diccionario.Add(palabrasReservadas["CREATE TABLE"], "α");
-            diccionario.Add(palabrasReservadas["INSERT INTO"], "α");
-            diccionario.Add(palabrasReservadas["SELECT"], "α");
-            diccionario.Add(palabrasReservadas["DELETE"], "α");
-            diccionario.Add(palabrasReservadas["DROP TABLE"], "α");
-            diccionario.Add(palabrasReservadas["UPDATE"], "α");
-            diccionario.Add(palabrasReservadas["FROM"], "Δ");
-            diccionario.Add(palabrasReservadas["WHERE"], "|");
-            diccionario.Add(palabrasReservadas["VALUES"], "~");
-            diccionario.Add("LIKE", "%");
-            diccionario.Add("PRIMARY KEY", "ρ");
-            diccionario.Add("INT", "π");
-            diccionario.Add("VARCHAR(100)", "β");
-            diccionario.Add("DATETIME", "Ω");
-
-            return diccionario;
-        } //Ya no sirve
-
-        private static Queue<char> encolarCaracteres(string texto)
-        {
-            List<char> caracteres = texto.ToList<char>();
-            Queue<char> cola = new Queue<char>();
-
-            foreach (var item in caracteres)
-            {
-                cola.Enqueue(item);
-            }
-
-            return cola;
-        } //Ya no sirve
-
+        
         private static void error()
         {
             //Escribir mensaje de error en pantalla
