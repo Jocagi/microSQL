@@ -1,17 +1,17 @@
 ﻿@model microSQL.Models.PalabrasReservadas
 
 @{
-    ViewBag.Title = "ConfiguracionDeIdioma";
+    ViewBag.Title = "Configuracion";
 }
 
-<h2>ConfiguracionDeIdioma</h2>
+<h2>Configuracion De Idioma</h2>
 
 @using (Html.BeginForm()) 
 {
     @Html.AntiForgeryToken()
     
 <div class="form-horizontal">
-    <h4>PalabrasReservadas</h4>
+    <h4>Ingrese Palabras Reservadas</h4>
     <hr />
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     <div class="form-group">

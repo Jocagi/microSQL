@@ -734,8 +734,6 @@ namespace microSQL
             microSQL.Controllers.HomeController.tablaActual = new Models.TablaVista(this.nombreTabla, this.columnas, filas);
 
         }
-
-        //Extra
         
         public void GuardarJson(Objeto[] A, string[] B)
         {

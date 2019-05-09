@@ -13,7 +13,7 @@ namespace microSQL.Controllers
     {
         public static Dictionary<string, string> palabrasReservadas = new Dictionary<string, string>();
         public static List<Tabla> tablas = new List<Tabla>();
-        public static TablaVista tablaActual = new TablaVista("Nueva tabla",new List<string> { "Columna 1", "Columna 2" , "Columna 3" , "Columna 4" }, null );
+        public static TablaVista tablaActual = new TablaVista("",new List<string> { "", "" , "" }, null );
         public static string mensaje = "";
         public static string textoInstrucciones = ""; 
 
@@ -66,7 +66,7 @@ namespace microSQL.Controllers
         public ActionResult exportarJSON()
         {
 
-            if (tablaActual.nombreTabla != null && tablaActual.nombreTabla != "" && tablaActual.nombreTabla != "TablaNueva")
+            if (tablaActual.nombreTabla != null && tablaActual.nombreTabla != "" && tablaActual.nombreTabla != "Nueva tabla" && tablaActual.nombreTabla != "Tabla Borrada")
             {
                 Tabla exportar = tablas.Find(x => x.nombreTabla == tablaActual.nombreTabla);
 
